@@ -5,36 +5,34 @@ if (!isLoggedIn()) {
     redirect('index.php');
 }
 
-// 1. Get User Data & Profile Score
 $user_id = $_SESSION['user_id'];
 $user_sql = "SELECT * FROM users WHERE id = $user_id";
 $user = $conn->query($user_sql)->fetch_assoc();
 
-// Calculate Profile Score (Mock Logic)
+// Profile Score Logic
 $filled_fields = 0;
-$total_fields = 6; // firstname, lastname, email, phone, bio, resume
+$total_fields = 6; 
 if ($user['firstname']) $filled_fields++;
 if ($user['lastname']) $filled_fields++;
 if ($user['email']) $filled_fields++;
-// Check documents for resume
 $has_resume = $conn->query("SELECT id FROM documents WHERE user_id = $user_id AND document_name = 'Resume'")->num_rows > 0;
 if ($has_resume) $filled_fields++;
-// ... other fields
-
+// Mock others
 $profile_percent = round(($filled_fields / $total_fields) * 100);
 
-
-// 2. Application Status Tracker
+// Status Tracker
 $stages = ['submitted', 'documents_uploaded', 'under_review', 'interview_scheduled', 'approved'];
 $current_stage_idx = array_search($user['status'], $stages);
-if ($current_stage_idx === false && $user['status'] == 'rejected') $current_stage_idx = -1; // Special case
+if ($current_stage_idx === false && $user['status'] == 'rejected') $current_stage_idx = -1;
 
-// 3. Document Checklist
+// Document Checklist
 $required_docs = ['Resume', 'Transcript', 'ID Proof'];
-$uploaded_docs_res = $conn->query("SELECT document_name, filename, version FROM documents WHERE user_id = $user_id");
+$uploaded_docs_res = $conn->query("SELECT id, document_name, filename, version FROM documents WHERE user_id = $user_id");
 $uploaded_docs = [];
 while ($d = $uploaded_docs_res->fetch_assoc()) $uploaded_docs[$d['document_name']] = $d;
 
+// Chat Setup (Defaulting recipient to Admin ID 1)
+$admin_id = 1; 
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -42,11 +40,12 @@ while ($d = $uploaded_docs_res->fetch_assoc()) $uploaded_docs[$d['document_name'
     <meta charset="UTF-8">
     <title>Student Portal - Campus Dive</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="chat.css"> <!-- Include Chat CSS -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="dashboard-body">
-    <div class="dashboard-container" style="grid-template-columns: 1fr;"> <!-- Full width for student -->
+    <div class="dashboard-container" style="grid-template-columns: 1fr;">
         
         <header class="top-header">
             <h2 style="margin: 0;">Student Portal</h2>
@@ -83,55 +82,82 @@ while ($d = $uploaded_docs_res->fetch_assoc()) $uploaded_docs[$d['document_name'
                 </div>
             </div>
 
-            <div class="grid-2-col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="grid-2-col" style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px;">
                 
-                <!-- Document Checklist -->
-                <div class="dashboard-card">
-                    <h3>Document Checklist</h3>
-                    <div class="checklist">
-                        <?php foreach ($required_docs as $doc): 
-                            $is_uploaded = isset($uploaded_docs[$doc]);
-                        ?>
-                        <div class="checklist-item" style="padding: 15px; border-bottom: 1px solid var(--border-color);">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                                <strong><?php echo $doc; ?></strong>
-                                <?php if ($is_uploaded): ?>
-                                    <span class="badge badge-success"><i class="fas fa-check"></i> Uploaded</span>
-                                <?php else: ?>
-                                    <span class="badge badge-warning"><i class="fas fa-exclamation-triangle"></i> Required</span>
-                                <?php endif; ?>
-                            </div>
-                            <!-- Embed Upload Component -->
-                            <?php 
-                                $title = "Upload " . $doc; 
-                                $doc_type = $doc;
-                                $id = strtolower(str_replace(' ', '_', $doc));
-                                include 'upload_component.php'; 
+                <!-- Left Column -->
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    
+                    <!-- Document Checklist -->
+                    <div class="dashboard-card">
+                        <h3>Document Checklist</h3>
+                        <div class="checklist">
+                            <?php foreach ($required_docs as $doc): 
+                                $is_uploaded = isset($uploaded_docs[$doc]);
+                                $doc_data = $is_uploaded ? $uploaded_docs[$doc] : null;
                             ?>
+                            <div class="checklist-item" style="padding: 15px; border-bottom: 1px solid var(--border-color);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <strong><?php echo $doc; ?></strong>
+                                    <?php if ($is_uploaded): ?>
+                                        <div>
+                                            <span class="badge badge-success"><i class="fas fa-check"></i> Uploaded</span>
+                                            <a href="view_document.php?id=<?php echo $doc_data['id']; ?>" target="_blank" class="btn-icon" title="View"><i class="fas fa-eye"></i></a>
+                                        </div>
+                                    <?php else: ?>
+                                        <span class="badge badge-warning"><i class="fas fa-exclamation-triangle"></i> Required</span>
+                                    <?php endif; ?>
+                                </div>
+                                <!-- Embed Upload Component -->
+                                <?php 
+                                    $title = "Upload " . $doc; 
+                                    $doc_type = $doc;
+                                    $id = strtolower(str_replace(' ', '_', $doc));
+                                    include 'upload_component.php'; 
+                                ?>
+                            </div>
+                            <?php endforeach; ?>
                         </div>
-                        <?php endforeach; ?>
                     </div>
+
+                    <!-- Interview Scheduler -->
+                    <div class="dashboard-card">
+                        <h3>Interview Schedule</h3>
+                         <div id="interviewStatus">Loading...</div>
+                         <div id="slotList" class="slots-container" style="margin-top: 15px; display: none;"></div>
+                    </div>
+
                 </div>
 
-                <!-- Interview Scheduler / Status -->
-                <div class="dashboard-card">
-                    <h3>Interview Schedule</h3>
-                    <?php if ($user['status'] == 'interview_scheduled'): ?>
-                        <div class="alert alert-success">
-                            <i class="fas fa-calendar-check"></i> Your interview is confirmed!
+                <!-- Right Column: Chat -->
+                <div class="dashboard-card" style="display: flex; flex-direction: column; height: 600px;">
+                    <h3 style="margin-bottom: 15px;">Message Recruiter</h3>
+                    
+                    <!-- Chat Container -->
+                    <div id="chatContainer" class="chat-interface" data-user-id="<?php echo $user_id; ?>" data-recipient-id="<?php echo $admin_id; ?>" style="flex: 1; display: flex; flex-direction: column; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
+                        
+                        <div class="chat-header" style="padding: 10px; background: var(--bg-body); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div id="userStatus" class="status-indicator offline"></div>
+                                <span>Recruiter (Admin)</span>
+                            </div>
+                            <!-- Typing Indicator -->
+                            <div id="typingIndicator" class="typing-indicator" style="display: none;">
+                                <span></span><span></span><span></span>
+                            </div>
                         </div>
-                        <!-- Placeholder for fetching actual slot -->
-                    <?php elseif ($user['status'] == 'under_review'): ?>
-                        <p>Your application is under review. If shortlisted, you will see available slots here.</p>
-                        <!-- Mock Slot Picker -->
-                        <div class="slots-container" style="margin-top: 15px;">
-                             <h4>Available Slots (Demo)</h4>
-                             <button class="btn-slot">Mon, 20 Feb 10:00 AM</button>
-                             <button class="btn-slot">Mon, 20 Feb 2:00 PM</button>
+
+                        <div id="chatMessages" class="chat-messages" style="flex: 1; padding: 15px; overflow-y: auto; background: var(--chat-bg);">
+                            <!-- Messages load here -->
                         </div>
-                    <?php else: ?>
-                        <p style="color: var(--text-muted);">Scheduling will be available once your application is reviewed.</p>
-                    <?php endif; ?>
+
+                        <form id="chatForm" class="chat-input-area" style="padding: 10px; border-top: 1px solid var(--border-color); display: flex; gap: 10px; background: var(--bg-card);">
+                            <div class="input-wrapper" style="flex: 1; position: relative;">
+                                <input type="text" id="chatInput" placeholder="Type a message..." autocomplete="off" style="width: 100%; padding: 10px; border-radius: 20px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main);">
+                            </div>
+                            <button type="submit" class="btn-primary" style="border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-paper-plane"></i></button>
+                        </form>
+                    </div>
+
                 </div>
 
             </div>
@@ -139,72 +165,83 @@ while ($d = $uploaded_docs_res->fetch_assoc()) $uploaded_docs[$d['document_name'
         </main>
     </div>
 
-    <!-- Additional Styles used here -->
     <style>
-        .tracker-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 20px;
-            overflow-x: auto;
-        }
-        .step {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-            z-index: 1;
-            min-width: 80px;
-        }
-        .step-icon {
-            width: 40px; 
-            height: 40px;
-            border-radius: 50%;
-            background: var(--input-bg);
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 10px;
-            transition: var(--transition);
-        }
-        .step.active .step-icon {
-            background: var(--primary-color);
-            color: white;
-        }
-        .step-label { font-size: 0.8em; text-align: center; color: var(--text-muted); }
-        .step-line {
-            flex: 1;
-            height: 3px;
-            background: var(--input-bg);
-            margin-bottom: 25px; /* align with icon */
-        }
-        .step-line.active { background: var(--primary-color); }
+        /* ... Existing styles ... */ 
+        /* Chat specific overrides if needed */
+        .chat-messages { display: flex; flex-direction: column; gap: 10px; }
+        .chat-message { max-width: 80%; padding: 10px 15px; border-radius: 15px; font-size: 0.9em; }
+        .chat-message.sent { align-self: flex-end; background: var(--primary-color); color: white; border-bottom-right-radius: 2px; }
+        .chat-message.received { align-self: flex-start; background: var(--bg-body); border: 1px solid var(--border-color); border-bottom-left-radius: 2px; }
+        .chat-meta { font-size: 0.7em; opacity: 0.7; margin-top: 5px; text-align: right; }
         
-        /* Circular Progress */
-        .progress-circle {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: radial-gradient(closest-side, var(--bg-card) 79%, transparent 80% 100%),
-            conic-gradient(var(--c) calc(var(--p)*1%), var(--input-bg) 0);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.7em;
-            font-weight: bold;
-        }
-        
-        .btn-slot {
-            margin: 5px;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            background: var(--bg-body);
-            cursor: pointer;
-            border-radius: 5px;
-        }
-        .btn-slot:hover { border-color: var(--primary-color); color: var(--primary-color); }
+        .slots-container { display: flex; flex-wrap: wrap; gap: 10px; }
+        .btn-slot { padding: 10px 15px; border: 1px solid var(--primary-color); background: rgba(var(--primary-rgb), 0.1); color: var(--primary-color); border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+        .btn-slot:hover { background: var(--primary-color); color: white; }
     </style>
+
     <script src="theme.js"></script>
+    <script src="chat.js"></script> <!-- Reusing existing chat client -->
+    <script>
+        // Interview Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchSlots();
+        });
+
+        function fetchSlots() {
+            const container = document.getElementById('slotList');
+            const statusDiv = document.getElementById('interviewStatus');
+            
+            fetch('interview_api.php?action=get_slots')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.length === 0) {
+                        statusDiv.innerHTML = '<p class="text-muted">No interview slots available at the moment.</p>';
+                        container.style.display = 'none';
+                        return;
+                    }
+
+                    // Check if already booked
+                    const mySlot = data.find(s => s.is_mine);
+                    if (mySlot) {
+                        statusDiv.innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle"></i> Interview Scheduled: <strong>${mySlot.start}</strong></div>`;
+                        container.style.display = 'none';
+                    } else {
+                        statusDiv.innerHTML = '<p>Select a time slot:</p>';
+                        container.style.display = 'flex';
+                        container.innerHTML = '';
+                        
+                        data.forEach(slot => {
+                            if (slot.status === 'open') {
+                                const btn = document.createElement('button');
+                                btn.className = 'btn-slot';
+                                btn.innerText = slot.start;
+                                btn.onclick = () => bookSlot(slot.id);
+                                container.appendChild(btn);
+                            }
+                        });
+                    }
+                });
+        }
+
+        function bookSlot(id) {
+            if (!confirm('Confirm booking this slot?')) return;
+            
+            fetch('interview_api.php?action=book', {
+                method: 'POST',
+                body: JSON.stringify({ slot_id: id }),
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    alert('Interview Scheduled!');
+                    fetchSlots(); // Refresh
+                    window.location.reload(); // Refresh to update tracker
+                } else {
+                    alert('Error: ' + res.error);
+                }
+            });
+        }
+    </script>
 </body>
 </html>

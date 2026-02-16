@@ -189,6 +189,9 @@ if (isset($_GET['mark_read']) || isset($_GET['mark_all_read'])) {
             <a href="?page=status" class="nav-item <?php echo isset($_GET['page']) && $_GET['page'] == 'status' ? 'active' : ''; ?>">
                 <i class="fas fa-clipboard-check"></i> Application Status
             </a>
+            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Theme" style="margin-left: 10px;">
+                <i class="fas fa-moon"></i>
+            </button>
         </nav>
         <div class="user-profile">
             <div class="user-avatar" style="overflow: hidden;">
@@ -597,5 +600,6 @@ if (isset($_GET['mark_read']) || isset($_GET['mark_all_read'])) {
             }
         });
     </script>
+    <script src="theme.js"></script>
 </body>
 </html>

@@ -185,63 +185,57 @@ $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - The Campus Dive</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="chat.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="dashboard-body admin-body">
-    <header class="dashboard-header">
-        <div class="logo-container">
-            <img src="campus.png" alt="The Campus Dive Logo" class="logo-img">
-            <h2 class="logo-text">Admin Portal</h2>
-        </div>
-        <nav class="dashboard-nav">
-            <a href="?page=dashboard" class="nav-item <?php echo $page == 'dashboard' ? 'active' : ''; ?>">
-                <i class="fas fa-home"></i> Dashboard
-            </a>
-            <a href="?page=students" class="nav-item <?php echo $page == 'students' ? 'active' : ''; ?>">
-                <i class="fas fa-users"></i> Students
-            </a>
-            <a href="?page=messages" class="nav-item <?php echo $page == 'messages' ? 'active' : ''; ?>">
-                <i class="fas fa-envelope"></i> Messages
-                <?php if ($unread_messages > 0): ?>
-                    <span class="badge"><?php echo $unread_messages; ?></span>
-                <?php endif; ?>
-            </a>
-            <a href="?page=documents" class="nav-item <?php echo $page == 'documents' ? 'active' : ''; ?>">
-                <i class="fas fa-file-alt"></i> All Documents
-            </a>
-            <a href="settings.php" class="nav-item">
-                <i class="fas fa-cog"></i> Settings
-            </a>
-        </nav>
-        <div class="user-profile">
-            <div class="user-avatar admin-avatar" style="overflow: hidden;">
-                <?php 
-                $admin_avatar = isset($admin_user['avatar_image']) ? $admin_user['avatar_image'] : (isset($_SESSION['avatar_image']) ? $_SESSION['avatar_image'] : '');
-                if (!empty($admin_avatar) && file_exists('uploads/avatars/' . $admin_avatar)): 
-                ?>
-                    <img src="uploads/avatars/<?php echo $admin_avatar; ?>?t=<?php echo time(); ?>" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">
-                <?php else: ?>
-                    AD
-                <?php endif; ?>
-            </div>
-            <div class="user-info">
-                <span class="user-name"><?php echo $_SESSION['firstname']; ?></span>
-                <span class="user-role">Administrator</span>
-            </div>
-            <div class="user-dropdown">
-                <button class="dropdown-btn" onclick="toggleDropdown()">
-                    <i class="fas fa-chevron-down"></i>
-                </button>
-                <div class="dropdown-content" id="dropdownContent">
-                    <a href="settings.php"><i class="fas fa-cog"></i> Settings</a>
-                    <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
-                </div>
-            </div>
-        </div>
-    </header>
+    <div class="dashboard-container">
+        <!-- Include Sidebar -->
+        <?php include 'sidebar.php'; ?>
 
-    <main class="dashboard-main">
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button id="sidebarToggle" class="theme-toggle" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px;">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="search-bar-container">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="globalSearch" placeholder="Search..." autocomplete="off">
+                        <div id="searchResults" class="dropdown-content" style="width: 100%; top: 100%; left: 0; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: var(--shadow); max-height: 300px; overflow-y: auto;"></div>
+                    </div>
+                </div>
+
+                <div class="header-actions" style="display: flex; align-items: center; gap: 20px;">
+                    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Theme">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    
+                    <div class="notification-bell" style="position: relative; cursor: pointer; margin-right: 15px;">
+                        <i class="fas fa-bell" style="font-size: 1.2em; color: var(--text-muted);"></i>
+                        <span id="bellBadge" style="position: absolute; top: -5px; right: -5px; background: var(--danger-color); color: white; font-size: 0.7em; padding: 2px 5px; border-radius: 50%; display: none;">0</span>
+                    </div>
+
+                    <div class="user-profile">
+                        <div class="user-avatar" style="width: 35px; height: 35px; border-radius: 50%; background: var(--primary-color); display: flex; align-items: center; justify-content: center; color: white;">
+                             <?php echo substr($_SESSION['firstname'], 0, 1); ?>
+                        </div>
+                        <div class="user-dropdown">
+                             <button class="dropdown-btn" onclick="toggleDropdown()">
+                                <i class="fas fa-chevron-down"></i>
+                             </button>
+                             <div class="dropdown-content" id="dropdownContent">
+                                <a href="settings.php"><i class="fas fa-cog"></i> Settings</a>
+                                <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+
         <?php if (isset($_SESSION['alert'])): ?>
             <div class="alert alert-<?php echo $_SESSION['alert']['type']; ?>">
                 <?php echo $_SESSION['alert']['message']; unset($_SESSION['alert']); ?>
@@ -343,6 +337,7 @@ $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
                     <div class="message-preview-list">
                         <?php 
                         $msg_count = 0;
+                        $messages->data_seek(0); // Reset pointer for dashboard display
                         while ($msg = $messages->fetch_assoc() && $msg_count < 5): 
                             $msg_count++;
                         ?>
@@ -363,6 +358,121 @@ $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
                 </div>
             </div>
         </div>
+        <?php elseif ($page == 'messages'): ?>
+            <?php 
+            $recipient_id = isset($_GET['recipient_id']) ? intval($_GET['recipient_id']) : 0;
+            if ($recipient_id > 0):
+                $recipient = $conn->query("SELECT firstname, lastname, email FROM users WHERE id = $recipient_id")->fetch_assoc();
+            ?>
+            <div id="chatContainer" class="chat-container" data-user-id="<?php echo $_SESSION['user_id']; ?>" data-recipient-id="<?php echo $recipient_id; ?>">
+                <div class="chat-header">
+                    <div class="chat-user-info">
+                        <a href="?page=messages" style="color: var(--text-muted); margin-right: 10px;"><i class="fas fa-arrow-left"></i></a>
+                        <div class="user-avatar" style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary-light); color: white; display: flex; align-items: center; justify-content: center;">
+                            <?php echo substr($recipient['firstname'], 0, 1); ?>
+                        </div>
+                        <div>
+                            <h4 style="margin: 0;"><?php echo $recipient['firstname'] . ' ' . $recipient['lastname']; ?></h4>
+                            <span style="font-size: 0.8em; color: var(--text-muted);">
+                                <span id="userStatus" class="status-indicator offline" style="margin-right: 5px;"></span> 
+                                <span class="status-text">Status</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="chat-actions">
+                        <span id="connectionStatus" class="status-indicator offline" title="Connecting..."></span>
+                    </div>
+                </div>
+
+                <div id="chatMessages" class="chat-messages">
+                    <?php 
+                    // Load history
+                    $hist_sql = "SELECT * FROM messages WHERE (sender_id = {$_SESSION['user_id']} AND receiver_id = $recipient_id) OR (sender_id = $recipient_id AND receiver_id = {$_SESSION['user_id']}) ORDER BY created_at ASC";
+                    $history = $conn->query($hist_sql);
+                    while ($msg = $history->fetch_assoc()):
+                        $is_sender = $msg['sender_id'] == $_SESSION['user_id'];
+                    ?>
+                    <div class="chat-message <?php echo $is_sender ? 'sent' : 'received'; ?>">
+                        <div class="message-content"><?php echo htmlspecialchars($msg['message']); ?></div>
+                        <?php if ($msg['attachment_path']): ?>
+                            <div class="file-attachment">
+                                <i class="fas fa-file"></i> 
+                                <a href="<?php echo htmlspecialchars($msg['attachment_path']); ?>" target="_blank">View Attachment</a>
+                            </div>
+                        <?php endif; ?>
+                        <div class="chat-meta"><?php echo date('H:i', strtotime($msg['created_at'])); ?></div>
+                    </div>
+                    <?php endwhile; ?>
+                </div>
+
+                <div id="typingIndicator" class="typing-indicator" style="display: none;">
+                    <?php echo $recipient['firstname']; ?> is typing...
+                </div>
+
+                <form id="chatForm" class="chat-input-area">
+                    <button type="button" class="btn-attach" title="Attach File"><i class="fas fa-paperclip"></i></button>
+                    <input type="text" id="chatInput" placeholder="Type a message..." autocomplete="off">
+                    <button type="submit" class="btn-send"><i class="fas fa-paper-plane"></i></button>
+                </form>
+            </div>
+            <?php else: ?>
+            <!-- List of Recent Conversations (Existing Logic or new layout) -->
+            <div class="dashboard-card wide">
+                <h3>Messages</h3>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Last Message</th>
+                                <th>Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            // Complex query to get last message per user
+                            $uid = $_SESSION['user_id'];
+                            $conv_sql = "SELECT m.*, u.id as uid, u.firstname, u.lastname, u.email 
+                                        FROM messages m 
+                                        JOIN users u ON (m.sender_id = u.id OR m.receiver_id = u.id)
+                                        WHERE (m.sender_id = $uid OR m.receiver_id = $uid) AND u.id != $uid
+                                        AND m.id IN (SELECT MAX(id) FROM messages WHERE sender_id = $uid OR receiver_id = $uid GROUP BY LEAST(sender_id, receiver_id), GREATEST(sender_id, receiver_id))
+                                        ORDER BY m.created_at DESC";
+                            $convs = $conn->query($conv_sql);
+                            
+                            if ($convs->num_rows > 0):
+                                while ($conv = $convs->fetch_assoc()):
+                                    // Determine the other user in the conversation
+                                    $other_user_id = ($conv['sender_id'] == $uid) ? $conv['receiver_id'] : $conv['sender_id'];
+                                    $other_user_info = $conn->query("SELECT firstname, lastname FROM users WHERE id = $other_user_id")->fetch_assoc();
+                            ?>
+                            <tr>
+                                <td data-label="User">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div class="user-avatar" style="width: 30px; height: 30px; border-radius: 50%; background: var(--primary-light); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.8em;">
+                                            <?php echo substr($other_user_info['firstname'], 0, 1); ?>
+                                        </div>
+                                        <?php echo $other_user_info['firstname'] . ' ' . $other_user_info['lastname']; ?>
+                                    </div>
+                                </td>
+                                <td data-label="Message" style="max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                    <?php echo htmlspecialchars($conv['message']); ?>
+                                </td>
+                                <td data-label="Date"><?php echo date('M d, H:i', strtotime($conv['created_at'])); ?></td>
+                                <td data-label="Action">
+                                    <a href="?page=messages&recipient_id=<?php echo $other_user_id; ?>" class="btn-primary">Chat</a>
+                                </td>
+                            </tr>
+                            <?php endwhile; 
+                            else: ?>
+                            <tr><td colspan="4" style="text-align: center;">No messages yet.</td></tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <?php endif; ?>
         <?php endif; ?>
 
         <!-- STUDENTS PAGE -->
@@ -751,15 +861,15 @@ The Campus Dive Recruitment Team</textarea>
                         while ($doc = $all_docs->fetch_assoc()): 
                         ?>
                         <tr>
-                            <td><?php echo $doc['firstname'] . ' ' . $doc['lastname']; ?></td>
-                            <td>
+                            <td data-label="Student"><?php echo $doc['firstname'] . ' ' . $doc['lastname']; ?></td>
+                            <td data-label="Document">
                                 <i class="fas fa-<?php echo strpos($doc['file_type'], 'pdf') !== false ? 'file-pdf' : (strpos($doc['file_type'], 'word') !== false ? 'file-word' : 'file-image'); ?>"></i>
                                 <?php echo htmlspecialchars($doc['original_name']); ?>
                             </td>
-                            <td><?php echo $doc['file_type']; ?></td>
-                            <td><?php echo round($doc['file_size'] / 1024, 2); ?> KB</td>
-                            <td><?php echo date('M d, Y', strtotime($doc['uploaded_at'])); ?></td>
-                            <td>
+                            <td data-label="Type"><?php echo $doc['file_type']; ?></td>
+                            <td data-label="Size"><?php echo round($doc['file_size'] / 1024, 2); ?> KB</td>
+                            <td data-label="Uploaded"><?php echo date('M d, Y', strtotime($doc['uploaded_at'])); ?></td>
+                            <td data-label="Actions">
                                 <a href="uploads/<?php echo $doc['filename']; ?>" target="_blank" class="btn-icon" title="View">
                                     <i class="fas fa-eye"></i>
                                 </a>
@@ -779,17 +889,28 @@ The Campus Dive Recruitment Team</textarea>
             </div>
         </div>
         <?php endif; ?>
-    </main>
 
+
+        </main>
+    </div> <!-- End Dashboard Container -->
+
+    <!-- Mobile Bottom Nav -->
+    <?php include 'bottom_nav.php'; ?>
+
+    <script src="admin.js"></script>
+    <script src="chat.js"></script>
+    <script src="notifications.js"></script>
+    <script src="theme.js"></script>
     <script>
         function toggleDropdown() {
-            document.getElementById('dropdownContent').classList.toggle('show');
+            const dropdown = document.getElementById('dropdownContent');
+            dropdown.classList.toggle('show');
         }
 
         window.onclick = function(e) {
             if (!e.target.matches('.dropdown-btn') && !e.target.matches('.dropdown-btn *')) {
                 const dropdown = document.getElementById('dropdownContent');
-                if (dropdown.classList.contains('show')) {
+                if (dropdown && dropdown.classList.contains('show')) {
                     dropdown.classList.remove('show');
                 }
             }

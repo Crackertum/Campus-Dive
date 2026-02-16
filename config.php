@@ -13,6 +13,16 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+require_once 'permission_check.php';
+// Ensure session role_id is set if not already (for migration compaibility)
+if (isset($_SESSION['user_id']) && !isset($_SESSION['role_id'])) {
+    $uid = $_SESSION['user_id'];
+    $r_query = $conn->query("SELECT role_id FROM users WHERE id = $uid");
+    if ($r_query && $r_query->num_rows > 0) {
+        $_SESSION['role_id'] = $r_query->fetch_assoc()['role_id'];
+    }
+}
+
 // Set charset to handle special characters
 $conn->set_charset("utf8mb4");
 

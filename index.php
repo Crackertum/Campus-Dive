@@ -85,6 +85,9 @@ if (isset($_GET['registered']) && $_GET['registered'] == 'success') {
             <a href="#" class="nav-link">About</a>
             <a href="#" class="nav-link">Opportunities</a>
             <a href="#" class="nav-link">Contact</a>
+            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Theme">
+                <i class="fas fa-moon"></i>
+            </button>
             <a href="register.php" class="btnLogin-popup">Register</a>
         </nav>
     </header>
@@ -165,5 +168,6 @@ if (isset($_GET['registered']) && $_GET['registered'] == 'success') {
             }
         }
     </script>
+    <script src="theme.js"></script>
 </body>
 </html>

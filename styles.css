@@ -2091,3 +2091,44 @@ body.dark-mode .theme-toggle i {
     text-align: center;
     border: 2px solid var(--bg-card);
 }
+
+/* ===============================
+   SKELETON LOADING ANIMATION
+   =============================== */
+.skeleton {
+    background: linear-gradient(90deg, var(--input-bg) 25%, var(--bg-card) 50%, var(--input-bg) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 4px;
+    display: inline-block;
+    height: 1em;
+    width: 100%;
+}
+
+.skeleton-text {
+    height: 0.8em;
+    margin-bottom: 0.5em;
+    border-radius: 2px;
+}
+
+.skeleton-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+}
+
+.skeleton-card {
+    padding: 20px;
+    border-radius: 15px;
+    background: var(--bg-card);
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}

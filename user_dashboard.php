@@ -243,6 +243,21 @@ if (isset($_GET['mark_read']) || isset($_GET['mark_all_read'])) {
                     </div>
                 </div>
             </div>
+              <section class="full-video-section">
+    <div class="video-wrapper">
+        <h2 class="video-title">
+            <i class="fas fa-play-circle"></i> Welcome Video
+        </h2>
+
+        <div class="video-container">
+            <video controls preload="metadata" poster="uploads/video-thumbnail.jpg">
+                <source src="uploads/welcome2-video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+    </div>
+</section>
+
 
             <div class="dashboard-grid">
                 <!-- Quick Stats -->

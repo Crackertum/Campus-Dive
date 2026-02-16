@@ -10,7 +10,7 @@ define('GOOGLE_REDIRECT_URI', 'http://localhost/campus_recruitment/google_callba
 // Download from: https://github.com/googleapis/google-api-php-client
 // Or install via Composer: composer require google/apiclient:^2.0
 
-require_once 'google-api-php-client/vendor/autoload.php';
+require_once 'vendor/autoload.php';
 
 use Google\Client;
 use Google\Service\Oauth2;

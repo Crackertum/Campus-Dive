@@ -69,7 +69,7 @@ class Chat implements MessageComponentInterface {
         $attachment = isset($data['attachment']) ? $db->real_escape_string($data['attachment']) : null;
         $msg_type = $attachment ? 'file' : 'text';
 
-        $sql = "INSERT INTO messages (sender_id, recipient_id, message, attachment_path, type, created_at) 
+        $sql = "INSERT INTO messages (sender_id, receiver_id, message, attachment_path, type, created_at) 
                 VALUES ('$sender_id', '$recipient_id', '$message', '$attachment', '$msg_type', NOW())";
         
         if ($db->query($sql)) {

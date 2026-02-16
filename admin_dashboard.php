@@ -716,117 +716,110 @@ The Campus Dive Recruitment Team</textarea>
 
         <!-- MESSAGES PAGE -->
         <?php if ($page == 'messages'): 
-            // Mark all messages as read when viewing messages page
-            $mark_read_stmt = $conn->prepare("UPDATE messages SET is_read = 1 WHERE receiver_id = ? AND is_read = 0");
-            $mark_read_stmt->bind_param("i", $_SESSION['user_id']);
-            $mark_read_stmt->execute();
-
-            // Refresh unread count
-            $stmt = $conn->prepare("SELECT COUNT(*) as count FROM messages WHERE receiver_id = ? AND is_read = FALSE");
-            $stmt->bind_param("i", $_SESSION['user_id']);
-            $stmt->execute();
-            $unread_messages = $stmt->get_result()->fetch_assoc()['count'];
+            $active_chat_user = isset($_GET['chat_with']) ? intval($_GET['chat_with']) : null;
         ?>
         <div class="dashboard-content">
-            <div class="section-header">
-                <h2><i class="fas fa-envelope"></i> All Messages</h2>
-                <?php if ($unread_messages > 0): ?>
-                <a href="?page=messages&mark_all_read=1" class="btn-secondary">Mark All as Read</a>
-                <?php endif; ?>
-            </div>
-
-            <!-- Message Compose Form - Admin can send to any user -->
-            <div class="dashboard-card" style="margin-bottom: 25px;">
-                <h3><i class="fas fa-paper-plane"></i> Send New Message</h3>
-                <form method="POST" action="admin_dashboard.php" style="margin-top: 20px;">
-                    <input type="hidden" name="action" value="send_message">
-                    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px; margin-bottom: 15px;">
-                        <div>
-                            <label style="display: block; margin-bottom: 5px; color: var(--text-dark); font-weight: 500;">Select Recipient:</label>
-                            <select name="receiver_id" required style="width: 100%; padding: 10px; border: 2px solid rgba(30, 90, 168, 0.1); border-radius: 8px;">
-                                <option value="">-- Select Student --</option>
-                                <?php 
-                                $students_list = $conn->query("SELECT id, firstname, lastname, student_id FROM users WHERE role = 'user' ORDER BY firstname");
-                                while ($student = $students_list->fetch_assoc()):
-                                ?>
-                                <option value="<?php echo $student['id']; ?>">
-                                    <?php echo htmlspecialchars($student['firstname'] . ' ' . $student['lastname'] . ' (' . $student['student_id'] . ')'); ?>
-                                </option>
-                                <?php endwhile; ?>
-                            </select>
-                        </div>
-                        <div>
-                            <label style="display: block; margin-bottom: 5px; color: var(--text-dark); font-weight: 500;">Subject:</label>
-                            <input type="text" name="subject" required placeholder="Enter subject..." style="width: 100%; padding: 10px; border: 2px solid rgba(30, 90, 168, 0.1); border-radius: 8px;">
-                        </div>
+            <div class="dashboard-card" style="display: grid; grid-template-columns: 300px 1fr; height: calc(100vh - 140px); padding: 0; overflow: hidden;">
+                
+                <!-- Left Sidebar: Inbox -->
+                <div class="message-sidebar" style="border-right: 1px solid var(--border-color); display: flex; flex-direction: column; background: var(--bg-card);">
+                    <div class="sidebar-header" style="padding: 15px; border-bottom: 1px solid var(--border-color);">
+                        <h3 style="margin: 0; font-size: 1.1em;">Inbox</h3>
                     </div>
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 5px; color: var(--text-dark); font-weight: 500;">Message:</label>
-                        <textarea name="message" rows="4" required placeholder="Type your message here..." style="width: 100%; padding: 10px; border: 2px solid rgba(30, 90, 168, 0.1); border-radius: 8px; resize: vertical;"></textarea>
-                    </div>
-                    <button type="submit" class="btn-submit" style="padding: 12px 30px;">
-                        <i class="fas fa-paper-plane"></i> Send Message
-                    </button>
-                </form>
-            </div>
+                    <div class="conversation-list" style="flex: 1; overflow-y: auto;">
+                        <?php 
+                        // Get unique users who have chatted with admin
+                        $sql = "SELECT DISTINCT 
+                                    u.id, u.firstname, u.lastname, u.role,
+                                    (SELECT message FROM messages WHERE (sender_id = u.id AND receiver_id = ?) OR (sender_id = ? AND receiver_id = u.id) ORDER BY created_at DESC LIMIT 1) as last_msg,
+                                    (SELECT created_at FROM messages WHERE (sender_id = u.id AND receiver_id = ?) OR (sender_id = ? AND receiver_id = u.id) ORDER BY created_at DESC LIMIT 1) as last_time,
+                                    (SELECT COUNT(*) FROM messages WHERE sender_id = u.id AND receiver_id = ? AND is_read = 0) as unread
+                                FROM users u
+                                JOIN messages m ON (m.sender_id = u.id OR m.receiver_id = u.id)
+                                WHERE (m.receiver_id = ? OR m.sender_id = ?) AND u.id != ?
+                                GROUP BY u.id
+                                ORDER BY last_time DESC";
+                        
+                        $stmt = $conn->prepare($sql);
+                        $admin_id = $_SESSION['user_id'];
+                        $stmt->bind_param("iiiiiiii", $admin_id, $admin_id, $admin_id, $admin_id, $admin_id, $admin_id, $admin_id, $admin_id);
+                        $stmt->execute();
+                        $conversations = $stmt->get_result();
 
-            <div class="messages-container" style="display: block;">
-                <div class="message-list full-width">
-                    <?php 
-                    // Get all messages where admin is sender or receiver
-                    $msg_query = "SELECT m.*, 
-                                        sender.firstname as sender_firstname, 
-                                        sender.lastname as sender_lastname,
-                                        sender.role as sender_role,
-                                        receiver.firstname as receiver_firstname,
-                                        receiver.lastname as receiver_lastname,
-                                        receiver.role as receiver_role
-                                 FROM messages m 
-                                 JOIN users sender ON m.sender_id = sender.id 
-                                 JOIN users receiver ON m.receiver_id = receiver.id 
-                                 WHERE m.receiver_id = ? OR m.sender_id = ?
-                                 ORDER BY m.created_at DESC";
-                    $msg_stmt = $conn->prepare($msg_query);
-                    $msg_stmt->bind_param("ii", $_SESSION['user_id'], $_SESSION['user_id']);
-                    $msg_stmt->execute();
-                    $all_messages = $msg_stmt->get_result();
-
-                    if ($all_messages && $all_messages->num_rows > 0):
-                        while ($msg = $all_messages->fetch_assoc()): 
-                            $is_sender = $msg['sender_id'] == $_SESSION['user_id'];
-                            $other_name = $is_sender ? 
-                                ($msg['receiver_firstname'] . ' ' . $msg['receiver_lastname']) : 
-                                ($msg['sender_firstname'] . ' ' . $msg['sender_lastname']);
-                    ?>
-                    <div class="message-item <?php echo $is_sender ? 'sent' : 'received'; ?> <?php echo !$msg['is_read'] && !$is_sender ? 'unread' : ''; ?>" style="margin-bottom: 15px; border-left: 4px solid <?php echo $is_sender ? 'var(--primary-color)' : 'var(--success-color)'; ?>;">
-                        <div class="message-avatar" style="background: <?php echo $is_sender ? 'var(--primary-color)' : 'var(--success-color)'; ?>;">
-                            <?php echo $is_sender ? 'AD' : substr($msg['sender_firstname'], 0, 1) . substr($msg['sender_lastname'], 0, 1); ?>
-                        </div>
-                        <div class="message-content">
-                            <div class="message-header" style="margin-bottom: 8px;">
-                                <strong><?php echo $is_sender ? 'You (Admin) → ' . $other_name : $other_name; ?></strong>
-                                <span class="message-time" style="float: right; color: var(--text-light); font-size: 0.9em;"><?php echo date('M d, Y H:i', strtotime($msg['created_at'])); ?></span>
+                        while ($conv = $conversations->fetch_assoc()):
+                            $is_active = ($active_chat_user == $conv['id']) ? 'background: var(--input-bg);' : '';
+                        ?>
+                        <a href="?page=messages&chat_with=<?php echo $conv['id']; ?>" class="conversation-item" style="display: flex; gap: 10px; padding: 15px; text-decoration: none; color: var(--text-main); border-bottom: 1px solid var(--border-color); transition: background 0.2s; <?php echo $is_active; ?>">
+                            <div class="avatar" style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">
+                                <?php echo substr($conv['firstname'], 0, 1) . substr($conv['lastname'], 0, 1); ?>
                             </div>
-                            <div class="message-subject" style="font-weight: 600; color: var(--primary-color); margin-bottom: 5px;"><?php echo htmlspecialchars($msg['subject']); ?></div>
-                            <div class="message-body" style="color: var(--text-dark); line-height: 1.5;"><?php echo nl2br(htmlspecialchars($msg['message'])); ?></div>
-                            <?php if (!$is_sender): ?>
-                            <div style="margin-top: 10px;">
-                                <?php if (!$msg['is_read']): ?>
-                                <a href="?page=messages&read_msg=<?php echo $msg['id']; ?>" class="btn-small" style="background: #27ae60; margin-right: 5px;">Mark as Read</a>
-                                <?php endif; ?>
-                                <a href="admin_dashboard.php?view_student=<?php echo $msg['sender_id']; ?>" class="btn-small">Reply</a>
+                            <div class="conv-info" style="flex: 1; overflow: hidden;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                    <strong style="font-size: 0.9em;"><?php echo $conv['firstname'] . ' ' . $conv['lastname']; ?></strong>
+                                    <span style="font-size: 0.75em; color: var(--text-muted);"><?php echo date('M d', strtotime($conv['last_time'])); ?></span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="font-size: 0.85em; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">
+                                        <?php echo htmlspecialchars(substr($conv['last_msg'], 0, 30)) . '...'; ?>
+                                    </span>
+                                    <?php if ($conv['unread'] > 0): ?>
+                                    <span class="badge" style="background: var(--danger-color); color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7em;"><?php echo $conv['unread']; ?></span>
+                                    <?php endif; ?>
+                                </div>
                             </div>
-                            <?php endif; ?>
-                        </div>
+                        </a>
+                        <?php endwhile; ?>
                     </div>
-                    <?php 
-                        endwhile;
-                    else:
+                </div>
+
+                <!-- Right Side: Chat Area -->
+                <div class="chat-area" style="display: flex; flex-direction: column; background: var(--bg-body);">
+                    <?php if ($active_chat_user): 
+                        // Fetch User Details
+                        $user_res = $conn->query("SELECT * FROM users WHERE id = $active_chat_user");
+                        $chat_user = $user_res->fetch_assoc();
+                        
+                        // Mark as Read
+                        $conn->query("UPDATE messages SET is_read = 1 WHERE sender_id = $active_chat_user AND receiver_id = $admin_id");
                     ?>
-                        <div class="empty-state" style="text-align: center; padding: 60px;">
-                            <i class="fas fa-inbox" style="font-size: 4em; color: var(--text-light); margin-bottom: 20px;"></i>
-                            <p>No messages yet</p>
+                    <div class="chat-header" style="padding: 15px; background: var(--bg-card); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 10px;">
+                        <h3 style="margin: 0; font-size: 1.1em;">Chat with <?php echo $chat_user['firstname'] . ' ' . $chat_user['lastname']; ?></h3>
+                        <div id="userStatus" class="status-indicator offline" title="Offline"></div>
+                    </div>
+
+                    <div id="chatMessages" class="chat-messages" style="flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px;">
+                        <?php 
+                        // Fetch History
+                        $msgs = $conn->query("SELECT * FROM messages 
+                                            WHERE (sender_id = $admin_id AND receiver_id = $active_chat_user) 
+                                               OR (sender_id = $active_chat_user AND receiver_id = $admin_id)
+                                            ORDER BY created_at ASC");
+                        while ($m = $msgs->fetch_assoc()):
+                            $is_me = ($m['sender_id'] == $admin_id);
+                        ?>
+                        <div class="chat-message <?php echo $is_me ? 'sent' : 'received'; ?>" style="<?php echo $is_me ? 'align-self: flex-end; background: var(--primary-color); color: white;' : 'align-self: flex-start; background: var(--bg-card); border: 1px solid var(--border-color);'; ?> padding: 10px 15px; border-radius: 15px; max-width: 70%;">
+                            <div class="msg-content"><?php echo htmlspecialchars($m['message']); ?></div>
+                            <div class="msg-meta" style="font-size: 0.7em; opacity: 0.7; text-align: right; margin-top: 5px;">
+                                <?php echo date('H:i', strtotime($m['created_at'])); ?>
+                            </div>
                         </div>
+                        <?php endwhile; ?>
+                    </div>
+
+                    <form id="chatForm" style="padding: 15px; background: var(--bg-card); border-top: 1px solid var(--border-color); display: flex; gap: 10px;">
+                        <input type="text" id="chatInput" placeholder="Type a message..." style="flex: 1; padding: 10px; border-radius: 20px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main);">
+                        <button type="submit" class="btn-primary" style="border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-paper-plane"></i></button>
+                    </form>
+
+                    <!-- Init Chat for Admin -->
+                    <div id="chatContainer" data-user-id="<?php echo $admin_id; ?>" data-recipient-id="<?php echo $active_chat_user; ?>" style="display: none;"></div>
+                    <script src="chat.js"></script>
+
+                    <?php else: ?>
+                    <div class="empty-state" style="display: flex; align-items: center; justify-content: center; flex: 1; color: var(--text-muted); flex-direction: column;">
+                        <i class="fas fa-comments" style="font-size: 4em; margin-bottom: 20px;"></i>
+                        <p>Select a conversation to start chatting</p>
+                    </div>
                     <?php endif; ?>
                 </div>
             </div>

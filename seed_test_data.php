@@ -42,7 +42,7 @@ foreach ($students as $s) {
             }
 
             // 4. Add Dummy Message
-            $conn->query("INSERT INTO messages (sender_id, recipient_id, message, type, created_at) 
+            $conn->query("INSERT INTO messages (sender_id, receiver_id, message, type, created_at) 
                           VALUES ($user_id, 1, 'Hi, I have a question about my application.', 'text', NOW())");
         }
     } else {

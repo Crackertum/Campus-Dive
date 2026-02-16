@@ -81,10 +81,7 @@ if (isset($_GET['registered']) && $_GET['registered'] == 'success') {
             <h2 class="logo-text">The Campus Dive</h2>
         </div>
         <nav class="navigation">
-            <a href="index.php" class="nav-link active">Home</a>
-            <a href="#" class="nav-link">About</a>
-            <a href="#" class="nav-link">Opportunities</a>
-            <a href="#" class="nav-link">Contact</a>
+            <!-- Navigation Links Removed -->
             <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Theme">
                 <i class="fas fa-moon"></i>
             </button>

@@ -79,10 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
             <h2 class="logo-text">The Campus Dive</h2>
         </div>
         <nav class="navigation">
-            <a href="index.php" class="nav-link">Home</a>
-            <a href="#" class="nav-link">About</a>
-            <a href="#" class="nav-link">Opportunities</a>
-            <a href="#" class="nav-link">Contact</a>
+            <!-- Navigation Links Removed -->
             <a href="index.php" class="btnLogin-popup">Login</a>
         </nav>
     </header>

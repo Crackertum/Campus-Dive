@@ -1,0 +1,44 @@
+<?php
+/**
+ * Database Connection (PDO Singleton)
+ */
+class Database {
+    private static ?PDO $instance = null;
+
+    private static function getEnv(string $key, string $default): string {
+        return getenv($key) ?: $default;
+    }
+
+    private static function getHost(): string { return self::getEnv('DB_HOST', 'localhost'); }
+    private static function getDbName(): string { return self::getEnv('DB_NAME', 'campus_recruitment'); }
+    private static function getUsername(): string { return self::getEnv('DB_USER', 'root'); }
+    private static function getPassword(): string { return self::getEnv('DB_PASS', ''); }
+    private const CHARSET = 'utf8mb4';
+
+    private function __construct() {}
+
+    public static function getInstance(): PDO {
+        if (self::$instance === null) {
+            $dsn = sprintf(
+                'mysql:host=%s;dbname=%s;charset=%s',
+                self::getHost(),
+                self::getDbName(),
+                self::CHARSET
+            );
+
+            try {
+                self::$instance = new PDO($dsn, self::getUsername(), self::getPassword(), [
+                    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES   => false,
+                ]);
+            } catch (PDOException $e) {
+                if (defined('APP_DEBUG') && APP_DEBUG) {
+                    throw new RuntimeException('Database connection failed: ' . $e->getMessage());
+                }
+                throw new RuntimeException('Database connection failed.');
+            }
+        }
+        return self::$instance;
+    }
+}

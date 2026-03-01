@@ -16,7 +16,16 @@ define('SESSION_NAME', 'campus_dive_session');
 define('CSRF_TOKEN_NAME', 'csrf_token');
 
 // Uploads
-define('UPLOAD_DIR', dirname(__DIR__, 2) . '/uploads/');
+// Uploads (Fallback to local api/uploads if root uploads doesn't exist)
+// Try local vendor first (for Railway), then fallback to root (for Local Development)
+if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
+    require_once __DIR__ . '/../vendor/autoload.php';
+} else {
+    require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
+}
+$rootUploads = dirname(__DIR__, 2) . '/uploads/';
+$localUploads = dirname(__DIR__, 1) . '/uploads/';
+define('UPLOAD_DIR', is_dir($rootUploads) ? $rootUploads : $localUploads);
 define('UPLOAD_MAX_SIZE', 5 * 1024 * 1024); // 5MB
 define('ALLOWED_DOC_TYPES', ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png']);
 define('ALLOWED_IMAGE_TYPES', ['image/jpeg', 'image/png', 'image/gif', 'image/webp']);

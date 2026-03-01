@@ -2,7 +2,14 @@
 /**
  * Email Service (PHPMailer wrapper)
  */
-require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
+// Autoload is now handled in config/app.php or here as fallback
+if (!class_exists('PHPMailer\PHPMailer\PHPMailer')) {
+    if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
+        require_once __DIR__ . '/../vendor/autoload.php';
+    } else {
+        require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
+    }
+}
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;

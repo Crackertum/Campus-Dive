@@ -5,8 +5,8 @@
 
 // App
 define('APP_NAME', 'Campus Dive');
-define('APP_URL', 'http://localhost/Campus-Dive-main');
-define('APP_DEBUG', true);
+define('APP_URL', getenv('APP_URL') ?: 'http://localhost/Campus-Dive-main');
+define('APP_DEBUG', getenv('APP_DEBUG') === 'true' || getenv('APP_DEBUG') === '1');
 
 // Session
 define('SESSION_LIFETIME', 7200); // 2 hours
@@ -31,7 +31,8 @@ define('MAIL_FROM_ADDRESS', 'campusdive.org@gmail.com');
 define('MAIL_FROM_NAME', 'Campus Dive');
 
 // CORS (Split by comma for multiple origins)
-define('CORS_ORIGIN', 'http://localhost:5173');
+$defaultOrigins = 'http://localhost:5173,https://campus-dive.vercel.app';
+define('CORS_ORIGIN', getenv('CORS_ORIGIN') ?: $defaultOrigins);
 
 // Roles
 define('ROLE_ADMIN', 1);

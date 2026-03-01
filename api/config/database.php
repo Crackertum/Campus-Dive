@@ -9,10 +9,21 @@ class Database {
         return getenv($key) ?: $default;
     }
 
-    private static function getHost(): string { return self::getEnv('DB_HOST', 'localhost'); }
-    private static function getDbName(): string { return self::getEnv('DB_NAME', 'campus_recruitment'); }
-    private static function getUsername(): string { return self::getEnv('DB_USER', 'root'); }
-    private static function getPassword(): string { return self::getEnv('DB_PASS', ''); }
+    private static function getHost(): string { 
+        return self::getEnv('MYSQLHOST', self::getEnv('DB_HOST', 'localhost')); 
+    }
+    private static function getDbName(): string { 
+        return self::getEnv('MYSQLDATABASE', self::getEnv('DB_NAME', 'campus_recruitment')); 
+    }
+    private static function getUsername(): string { 
+        return self::getEnv('MYSQLUSER', self::getEnv('DB_USER', 'root')); 
+    }
+    private static function getPassword(): string { 
+        return self::getEnv('MYSQLPASSWORD', self::getEnv('DB_PASS', '')); 
+    }
+    private static function getPort(): string {
+        return self::getEnv('MYSQLPORT', self::getEnv('DB_PORT', '3306'));
+    }
     private const CHARSET = 'utf8mb4';
 
     private function __construct() {}
@@ -20,8 +31,9 @@ class Database {
     public static function getInstance(): PDO {
         if (self::$instance === null) {
             $dsn = sprintf(
-                'mysql:host=%s;dbname=%s;charset=%s',
+                'mysql:host=%s;port=%s;dbname=%s;charset=%s',
                 self::getHost(),
+                self::getPort(),
                 self::getDbName(),
                 self::CHARSET
             );

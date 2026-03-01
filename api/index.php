@@ -4,7 +4,28 @@
  * All API requests are routed through this file via .htaccess
  */
 
-// Error handling
+// 1. CORS & Preflight (Handle ASAP)
+$defaultOrigins = 'http://localhost:5173,https://campus-dive.vercel.app';
+$envOrigin = getenv('CORS_ORIGIN') ?: $defaultOrigins;
+$allowedOrigins = array_map('trim', explode(',', $envOrigin));
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+
+if (in_array($origin, $allowedOrigins)) {
+    header("Access-Control-Allow-Origin: $origin");
+} elseif (empty($origin)) {
+    header("Access-Control-Allow-Origin: *");
+}
+
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-CSRF-Token, X-Requested-With');
+header('Access-Control-Allow-Credentials: true');
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
+
+// 2. Error handling
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 set_exception_handler(function (Throwable $e) {
@@ -51,28 +72,17 @@ require_once __DIR__ . '/controllers/AdminController.php';
 require_once __DIR__ . '/controllers/MessageController.php';
 require_once __DIR__ . '/controllers/NotificationController.php';
 
-// CORS
-$allowedOrigins = defined('CORS_ORIGIN') ? explode(',', CORS_ORIGIN) : ['http://localhost:5173'];
-$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-
-if (in_array($origin, $allowedOrigins) || empty($origin)) {
-    header('Access-Control-Allow-Origin: ' . ($origin ?: '*'));
-}
-
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization, X-CSRF-Token');
-header('Access-Control-Allow-Credentials: true');
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit;
-}
+// CORS logic moved to top
 
 // Parse route
 $requestUri = $_SERVER['REQUEST_URI'];
-$basePath = '/Campus-Dive-main/api';
+$scriptName = $_SERVER['SCRIPT_NAME'];
+$basePath = str_replace('/index.php', '', $scriptName);
 $path = parse_url($requestUri, PHP_URL_PATH);
-$path = substr($path, strlen($basePath)) ?: '/';
+
+if (strpos($path, $basePath) === 0) {
+    $path = substr($path, strlen($basePath));
+}
 $path = rtrim($path, '/') ?: '/';
 $method = $_SERVER['REQUEST_METHOD'];
 

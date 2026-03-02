@@ -5,52 +5,47 @@
 class Database {
     private static ?PDO $instance = null;
 
-    private static function getEnv(string $key, string $default): string {
+    private static function getEnv(string $key, $default = null) {
         $val = getenv($key);
-        if ($val !== false) return $val;
+        if ($val !== false && $val !== '') return $val;
         if (isset($_ENV[$key]) && $_ENV[$key] !== '') return $_ENV[$key];
         if (isset($_SERVER[$key]) && $_SERVER[$key] !== '') return $_SERVER[$key];
         return $default;
     }
 
-    private static function getHost(): string { 
-        return self::getEnv('MYSQLHOST', self::getEnv('DB_HOST', '127.0.0.1')); 
-    }
-    private static function getDbName(): string { 
-        return self::getEnv('MYSQLDATABASE', self::getEnv('DB_NAME', 'campus_recruitment')); 
-    }
-    private static function getUsername(): string { 
-        return self::getEnv('MYSQLUSER', self::getEnv('DB_USER', 'root')); 
-    }
-    private static function getPassword(): string { 
-        return self::getEnv('MYSQLPASSWORD', self::getEnv('DB_PASS', '')); 
-    }
-    private static function getPort(): string {
-        return self::getEnv('MYSQLPORT', self::getEnv('DB_PORT', '3306'));
-    }
-    private const CHARSET = 'utf8mb4';
-
-    private function __construct() {}
-
     public static function getInstance(): PDO {
         if (self::$instance === null) {
-            $dsn = sprintf(
-                'mysql:host=%s;port=%s;dbname=%s;charset=%s',
-                self::getHost(),
-                self::getPort(),
-                self::getDbName(),
-                self::CHARSET
-            );
+            // Priority 1: MYSQL_URL (The most reliable on Railway)
+            $mysqlUrl = self::getEnv('MYSQL_URL');
+            
+            if ($mysqlUrl) {
+                // Format: mysql://user:pass@host:port/db
+                $parts = parse_url($mysqlUrl);
+                $host = $parts['host'] ?? '127.0.0.1';
+                $port = $parts['port'] ?? '3306';
+                $user = $parts['user'] ?? 'root';
+                $pass = $parts['pass'] ?? '';
+                $db   = ltrim($parts['path'] ?? 'railway', '/');
+            } else {
+                // Priority 2: Individual Railway variables
+                $host = self::getEnv('MYSQLHOST', '127.0.0.1');
+                $port = self::getEnv('MYSQLPORT', '3306');
+                $user = self::getEnv('MYSQLUSER', 'root');
+                $pass = self::getEnv('MYSQLPASSWORD', '');
+                $db   = self::getEnv('MYSQLDATABASE', 'railway');
+            }
+
+            $dsn = sprintf('mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4', $host, $port, $db);
 
             try {
-                self::$instance = new PDO($dsn, self::getUsername(), self::getPassword(), [
+                self::$instance = new PDO($dsn, $user, $pass, [
                     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                     PDO::ATTR_EMULATE_PREPARES   => false,
                 ]);
             } catch (PDOException $e) {
-                if (defined('APP_DEBUG') && APP_DEBUG) {
-                    throw new RuntimeException('Database connection failed: ' . $e->getMessage());
+                if (self::getEnv('APP_DEBUG') === 'true' || self::getEnv('APP_DEBUG') === '1') {
+                    throw new RuntimeException('Database connection failed: ' . $e->getMessage() . " (Host: $host, Port: $port, DB: $db, User: $user)");
                 }
                 throw new RuntimeException('Database connection failed.');
             }

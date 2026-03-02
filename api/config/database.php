@@ -6,11 +6,15 @@ class Database {
     private static ?PDO $instance = null;
 
     private static function getEnv(string $key, string $default): string {
-        return getenv($key) ?: $default;
+        $val = getenv($key);
+        if ($val !== false) return $val;
+        if (isset($_ENV[$key]) && $_ENV[$key] !== '') return $_ENV[$key];
+        if (isset($_SERVER[$key]) && $_SERVER[$key] !== '') return $_SERVER[$key];
+        return $default;
     }
 
     private static function getHost(): string { 
-        return self::getEnv('MYSQLHOST', self::getEnv('DB_HOST', 'localhost')); 
+        return self::getEnv('MYSQLHOST', self::getEnv('DB_HOST', '127.0.0.1')); 
     }
     private static function getDbName(): string { 
         return self::getEnv('MYSQLDATABASE', self::getEnv('DB_NAME', 'campus_recruitment')); 

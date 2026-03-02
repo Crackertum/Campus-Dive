@@ -38,6 +38,14 @@ class EmailService {
             $mail->send();
             return true;
         } catch (Exception $e) {
+            $errorLog = dirname(__DIR__) . '/logs/email_errors.log';
+            if (!is_dir(dirname($errorLog))) {
+                mkdir(dirname($errorLog), 0777, true);
+            }
+            $timestamp = date('Y-m-d H:i:s');
+            $logMessage = "[$timestamp] Email failed to $to: {$mail->ErrorInfo} " . ($e->getMessage()) . "\n";
+            file_put_contents($errorLog, $logMessage, FILE_APPEND);
+            
             if (APP_DEBUG) {
                 error_log("Email failed: " . $mail->ErrorInfo);
             }

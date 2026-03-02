@@ -127,6 +127,20 @@ $routes = [
     'GET  /notifications'           => ['NotificationController', 'index'],
     'PUT  /notifications/read-all'  => ['NotificationController', 'markAllRead'],
     'GET  /notifications/unread-count' => ['NotificationController', 'unreadCount'],
+
+    // Logs (Debug Only)
+    'GET  /logs/emails' => function() {
+        if (!defined('APP_DEBUG') || !APP_DEBUG) {
+            Response::error('Logs only accessible in debug mode.', 403);
+        }
+        $logFile = __DIR__ . '/logs/email_errors.log';
+        if (!file_exists($logFile)) {
+            Response::success(['logs' => 'No logs found yet.'], 'No email error logs available.');
+        }
+        $content = file_get_contents($logFile);
+        echo "<pre>$content</pre>";
+        exit;
+    },
 ];
 
 // Parameterized routes (with :id)

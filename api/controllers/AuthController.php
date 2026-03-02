@@ -86,10 +86,14 @@ class AuthController {
         }
 
         // Send verification email
-        EmailService::sendVerification($input['email'], $input['firstname'], $token);
+        $emailSent = EmailService::sendVerification($v->sanitized('email'), $v->sanitized('firstname'), $token);
 
         // Create welcome notification
         Notification::create($userId, 'Welcome!', 'Your account has been created. Please verify your email to get started.', 'success');
+
+        if (!$emailSent) {
+            Response::success(null, 'Registration successful! However, we could not send the verification email. Please contact support.', 201);
+        }
 
         Response::success(null, 'Registration successful! Please check your email to verify your account.', 201);
     }
@@ -102,8 +106,12 @@ class AuthController {
         }
 
         if (User::verifyEmail($token)) {
+            // Get the first allowed origin for redirect
+            $origins = explode(',', CORS_ORIGIN);
+            $redirectUrl = trim($origins[0]);
+            
             // Redirect to frontend login with success
-            header('Location: ' . CORS_ORIGIN . '/#/login?verified=true');
+            header('Location: ' . $redirectUrl . '/#/login?verified=true');
             exit;
         }
 

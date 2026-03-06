@@ -2,7 +2,6 @@
 /**
  * Email Service (PHPMailer wrapper)
  */
-// Autoload is now handled in config/app.php or here as fallback
 if (!class_exists('PHPMailer\PHPMailer\PHPMailer')) {
     if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
         require_once __DIR__ . '/../vendor/autoload.php';
@@ -45,7 +44,7 @@ class EmailService {
             $timestamp = date('Y-m-d H:i:s');
             $logMessage = "[$timestamp] Email failed to $to: {$mail->ErrorInfo} " . ($e->getMessage()) . "\n";
             file_put_contents($errorLog, $logMessage, FILE_APPEND);
-            
+
             if (APP_DEBUG) {
                 error_log("Email failed: " . $mail->ErrorInfo);
             }
@@ -54,7 +53,7 @@ class EmailService {
     }
 
     public static function sendVerification(string $to, string $firstname, string $token): bool {
-        $baseUrl = rtrim(APP_URL, '/');
+        $baseUrl = rtrim(getenv('APP_URL') ?: 'https://campus-dive-production.up.railway.app', '/');
         $link = $baseUrl . '/api/auth/verify-email?token=' . $token;
         $html = "
             <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
@@ -69,7 +68,8 @@ class EmailService {
     }
 
     public static function sendPasswordReset(string $to, string $firstname, string $token): bool {
-        $link = APP_URL . '/Campus-Dive-main/frontend/#/reset-password?token=' . $token;
+        $frontendUrl = rtrim(getenv('FRONTEND_URL') ?: 'https://campus-dive.vercel.app', '/');
+        $link = $frontendUrl . '/#/reset-password?token=' . $token;
         $html = "
             <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
                 <h2 style='color: #6366f1;'>Password Reset</h2>

@@ -5,7 +5,7 @@
 
 // App
 define('APP_NAME', 'Campus Dive');
-define('APP_URL', getenv('APP_URL') ?: 'http://localhost/Campus-Dive-main');
+define('APP_URL', getenv('APP_URL') ?: 'https://campus-dive-production.up.railway.app');
 define('APP_DEBUG', getenv('APP_DEBUG') === 'true' || getenv('APP_DEBUG') === '1');
 
 // Session

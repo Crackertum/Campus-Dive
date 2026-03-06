@@ -58,8 +58,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-// Session
+// Session Configuration (Required for cross-site Vercel <-> Railway)
 if (session_status() === PHP_SESSION_NONE) {
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path'     => '/',
+        'domain'   => '', // Use current host
+        'secure'   => true,   // Required for SameSite=None
+        'httponly' => true,
+        'samesite' => 'None', // Required for cross-site
+    ]);
     session_start();
 }
 

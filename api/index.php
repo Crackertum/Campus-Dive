@@ -1,4 +1,6 @@
 <?php
+ob_start(); // ← OUTPUT BUFFERING - MUST BE FIRST LINE
+
 /**
  * Campus Dive API — Front Controller / Router
  * All API requests are routed through this file via .htaccess
@@ -29,11 +31,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 set_exception_handler(function (Throwable $e) {
+    ob_clean(); // ← CLEAR ANY STRAY OUTPUT
     http_response_code(500);
     header('Content-Type: application/json');
     echo json_encode([
         'success' => false,
         'message' => defined('APP_DEBUG') && APP_DEBUG ? $e->getMessage() : 'Internal server error.',
+        'file'    => defined('APP_DEBUG') && APP_DEBUG ? $e->getFile() : null,
+        'line'    => defined('APP_DEBUG') && APP_DEBUG ? $e->getLine() : null,
     ]);
     exit;
 });
@@ -71,8 +76,6 @@ require_once __DIR__ . '/controllers/StudentController.php';
 require_once __DIR__ . '/controllers/AdminController.php';
 require_once __DIR__ . '/controllers/MessageController.php';
 require_once __DIR__ . '/controllers/NotificationController.php';
-
-// CORS logic moved to top
 
 // Parse route
 $requestUri = $_SERVER['REQUEST_URI'];
@@ -145,13 +148,13 @@ $routes = [
 
 // Parameterized routes (with :id)
 $paramRoutes = [
-    'DELETE /student/documents/:id'  => ['StudentController', 'deleteDocument'],
-    'GET    /admin/students/:id'     => ['AdminController', 'studentDetail'],
+    'DELETE /student/documents/:id'     => ['StudentController', 'deleteDocument'],
+    'GET    /admin/students/:id'        => ['AdminController', 'studentDetail'],
     'PUT    /admin/students/:id/status' => ['AdminController', 'updateStudentStatus'],
-    'PUT    /admin/roles/:id'        => ['AdminController', 'updateRole'],
-    'GET    /messages/thread/:id'    => ['MessageController', 'thread'],
-    'PUT    /messages/:id/read'      => ['MessageController', 'markRead'],
-    'PUT    /notifications/:id/read' => ['NotificationController', 'markRead'],
+    'PUT    /admin/roles/:id'           => ['AdminController', 'updateRole'],
+    'GET    /messages/thread/:id'       => ['MessageController', 'thread'],
+    'PUT    /messages/:id/read'         => ['MessageController', 'markRead'],
+    'PUT    /notifications/:id/read'    => ['NotificationController', 'markRead'],
 ];
 
 // ────────────────────────────────────────────
@@ -159,11 +162,10 @@ $paramRoutes = [
 // ────────────────────────────────────────────
 
 // 1. Check exact routes
-$routeKey = $method . ' ' . $path;
 foreach ($routes as $pattern => $handler) {
     $patternMethod = trim(explode(' ', trim($pattern))[0]);
     $patternPath = trim(explode(' ', trim($pattern), 2)[1]);
-    
+
     if ($patternMethod === $method && $patternPath === $path) {
         if (is_callable($handler)) {
             $handler();
@@ -183,7 +185,6 @@ foreach ($paramRoutes as $pattern => $handler) {
 
     if ($patternMethod !== $method) continue;
 
-    // Convert :id to regex
     $regex = preg_replace('#:(\w+)#', '(\d+)', $patternPath);
     $regex = '#^' . $regex . '$#';
 

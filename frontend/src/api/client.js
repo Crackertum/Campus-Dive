@@ -15,23 +15,23 @@ class ApiClient {
             ...options,
         };
 
-        // Add CSRF token for mutating requests
         if (['POST', 'PUT', 'DELETE'].includes(config.method)) {
             if (this.csrfToken) {
                 config.headers['X-CSRF-Token'] = this.csrfToken;
             }
         }
 
-        // Auto JSON for non-FormData bodies
         if (config.body && !(config.body instanceof FormData)) {
             config.headers['Content-Type'] = 'application/json';
             config.body = JSON.stringify(config.body);
         }
 
         const response = await fetch(url, config);
-        const data = await response.json();
 
-        // Store CSRF token from response
+        // ← SAFE JSON PARSING - won't crash on empty response
+        const text = await response.text();
+        const data = text ? JSON.parse(text) : {};
+
         if (data.data?.csrf_token) {
             this.csrfToken = data.data.csrf_token;
         }

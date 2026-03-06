@@ -25,6 +25,20 @@ class EmailService {
             $mail->Username   = MAIL_USERNAME;
             $mail->Password   = MAIL_PASSWORD;
             
+            // Set short timeouts to prevent PHP Fatal Timeout
+            $mail->Timeout = 10;
+            $mail->SMTPConnectTimeout = 10;
+
+            // Enable SMTP Debugging for logs
+            $errorLog = dirname(__DIR__) . '/logs/email_errors.log';
+            if (!is_dir(dirname($errorLog))) {
+                mkdir(dirname($errorLog), 0777, true);
+            }
+            $mail->SMTPDebug = 2; // Output verbose debug
+            $mail->Debugoutput = function($str, $level) use ($errorLog) {
+                file_put_contents($errorLog, "[" . date('Y-m-d H:i:s') . "] SMTP DEBUG: $str\n", FILE_APPEND);
+            };
+
             // Auto-detect encryption based on port
             if (MAIL_PORT === 465) {
                 $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;

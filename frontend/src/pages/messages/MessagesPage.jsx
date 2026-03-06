@@ -6,7 +6,7 @@ import { useToast } from '../../context/ToastContext';
 import { UserAvatar } from '../../components/ui/StatusBadge';
 import { SkeletonCard } from '../../components/ui/Skeleton';
 import EmptyState from '../../components/ui/EmptyState';
-import { Send, Paperclip, Search, MessageSquare, CheckCheck, X, File } from 'lucide-react';
+import { Send, Paperclip, Search, MessageSquare, CheckCheck, X, File, Plus, UserPlus } from 'lucide-react';
 
 export default function MessagesPage() {
     const { user } = useAuth();
@@ -20,9 +20,14 @@ export default function MessagesPage() {
     const [sending, setSending] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [attachment, setAttachment] = useState(null);
+    const [showNewMsgModal, setShowNewMsgModal] = useState(false);
+    const [allStudents, setAllStudents] = useState([]);
+    const [studentSearch, setStudentSearch] = useState('');
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
     const location = useLocation();
+
+    const { isAdmin, isManager } = useAuth();
 
     useEffect(() => {
         loadConversations();
@@ -57,7 +62,17 @@ export default function MessagesPage() {
         }
     };
 
-    // Poll active thread
+    const fetchStudents = async () => {
+        if (!isAdmin && !isManager) return;
+        try {
+            const res = await api.get('/admin/students?limit=100');
+            setAllStudents(res.data.data);
+        } catch (e) { }
+    };
+
+    useEffect(() => {
+        if (showNewMsgModal) fetchStudents();
+    }, [showNewMsgModal]);
     useEffect(() => {
         if (!activeThread) return;
         const interval = setInterval(() => loadThread(activeThread), 5000);
@@ -113,16 +128,27 @@ export default function MessagesPage() {
                 <div className="flex h-full">
                     {/* Conversation List */}
                     <div className={`w-full sm:w-80 border-r border-surface-100 dark:border-surface-800 flex flex-col ${activeThread ? 'hidden sm:flex' : 'flex'}`}>
-                        <div className="p-4 border-b border-surface-100 dark:border-surface-800">
-                            <div className="relative">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" />
-                                <input
-                                    type="text"
-                                    value={searchTerm}
-                                    onChange={e => setSearchTerm(e.target.value)}
-                                    className="input-field pl-10 py-2 text-sm"
-                                    placeholder="Search conversations..."
-                                />
+                        <div className="p-4 border-b border-surface-100 dark:border-surface-800 space-y-3">
+                            <div className="flex items-center justify-between gap-2">
+                                <div className="relative flex-1">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" />
+                                    <input
+                                        type="text"
+                                        value={searchTerm}
+                                        onChange={e => setSearchTerm(e.target.value)}
+                                        className="input-field pl-10 py-2 text-sm"
+                                        placeholder="Search..."
+                                    />
+                                </div>
+                                {(isAdmin || isManager) && (
+                                    <button
+                                        onClick={() => setShowNewMsgModal(true)}
+                                        className="btn-primary p-2 rounded-xl shrink-0"
+                                        title="New Message"
+                                    >
+                                        <Plus className="w-5 h-5" />
+                                    </button>
+                                )}
                             </div>
                         </div>
                         <div className="flex-1 overflow-y-auto">
@@ -130,6 +156,14 @@ export default function MessagesPage() {
                                 <div className="p-8 text-center text-surface-400">
                                     <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-50" />
                                     <p className="text-sm">No conversations</p>
+                                    {(isAdmin || isManager) && (
+                                        <button
+                                            onClick={() => setShowNewMsgModal(true)}
+                                            className="text-primary-500 font-semibold text-xs mt-4 hover:underline"
+                                        >
+                                            + Start a new chat
+                                        </button>
+                                    )}
                                 </div>
                             ) : filtered.map(conv => (
                                 <button
@@ -259,6 +293,70 @@ export default function MessagesPage() {
                     </div>
                 </div>
             </div>
+
+            {/* New Message Modal */}
+            {showNewMsgModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowNewMsgModal(false)} />
+                    <div className="card w-full max-w-md relative animate-slide-up shadow-2xl overflow-hidden">
+                        <div className="p-4 border-b border-white/10 flex items-center justify-between">
+                            <h3 className="font-bold flex items-center gap-2">
+                                <UserPlus className="w-5 h-5 text-primary-500" />
+                                Start New Conversation
+                            </h3>
+                            <button onClick={() => setShowNewMsgModal(false)} className="btn-icon">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <div className="p-4 bg-surface-50 dark:bg-white/5 border-b border-white/10">
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" />
+                                <input
+                                    type="text"
+                                    value={studentSearch}
+                                    onChange={e => setStudentSearch(e.target.value)}
+                                    className="input-field pl-10 text-sm"
+                                    placeholder="Search students by name or email..."
+                                    autoFocus
+                                />
+                            </div>
+                        </div>
+                        <div className="max-h-80 overflow-y-auto">
+                            {allStudents.filter(s =>
+                                !studentSearch ||
+                                `${s.firstname} ${s.lastname}`.toLowerCase().includes(studentSearch.toLowerCase()) ||
+                                s.email.toLowerCase().includes(studentSearch.toLowerCase())
+                            ).length === 0 ? (
+                                <div className="p-8 text-center text-surface-400 text-sm">
+                                    No students found.
+                                </div>
+                            ) : allStudents
+                                .filter(s =>
+                                    !studentSearch ||
+                                    `${s.firstname} ${s.lastname}`.toLowerCase().includes(studentSearch.toLowerCase()) ||
+                                    s.email.toLowerCase().includes(studentSearch.toLowerCase())
+                                )
+                                .map(s => (
+                                    <button
+                                        key={s.id}
+                                        onClick={() => {
+                                            loadThread(s.id);
+                                            setShowNewMsgModal(false);
+                                            setStudentSearch('');
+                                        }}
+                                        className="w-full flex items-center gap-3 p-4 text-left hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors border-b border-surface-50 dark:border-surface-800/50"
+                                    >
+                                        <UserAvatar user={s} size="sm" />
+                                        <div className="min-w-0">
+                                            <p className="text-sm font-semibold truncate">{s.firstname} {s.lastname}</p>
+                                            <p className="text-xs text-surface-500 truncate">{s.email}</p>
+                                        </div>
+                                    </button>
+                                ))}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

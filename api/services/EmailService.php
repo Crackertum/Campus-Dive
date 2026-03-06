@@ -16,61 +16,46 @@ use PHPMailer\PHPMailer\Exception;
 class EmailService {
 
     public static function send(string $to, string $subject, string $htmlBody): bool {
-        $mail = new PHPMailer(true);
+        $apiKey = MAIL_PASSWORD; // Assuming this is the 're_xxxx' Resend key
+        $apiUrl = 'https://api.resend.com/emails';
 
-        try {
-            $mail->isSMTP();
-            $mail->Host       = MAIL_HOST;
-            $mail->SMTPAuth   = true;
-            $mail->Username   = MAIL_USERNAME;
-            $mail->Password   = MAIL_PASSWORD;
-            
-            // Set short timeouts to prevent PHP Fatal Timeout
-            $mail->Timeout = 10;
-            $mail->SMTPConnectTimeout = 10;
+        $data = [
+            'from'    => MAIL_FROM_NAME . ' <' . MAIL_FROM_ADDRESS . '>',
+            'to'      => [$to],
+            'subject' => $subject,
+            'html'    => $htmlBody,
+        ];
 
-            // Enable SMTP Debugging for logs
-            $errorLog = dirname(__DIR__) . '/logs/email_errors.log';
-            if (!is_dir(dirname($errorLog))) {
-                mkdir(dirname($errorLog), 0777, true);
-            }
-            $mail->SMTPDebug = 2; // Output verbose debug
-            $mail->Debugoutput = function($str, $level) use ($errorLog) {
-                file_put_contents($errorLog, "[" . date('Y-m-d H:i:s') . "] SMTP DEBUG: $str\n", FILE_APPEND);
-            };
+        $ch = curl_init();
 
-            // Auto-detect encryption based on port
-            if (MAIL_PORT === 465) {
-                $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-            } else {
-                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            }
-            
-            $mail->Port = MAIL_PORT;
+        curl_setopt($ch, CURLOPT_URL, $apiUrl);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Authorization: Bearer ' . $apiKey,
+            'Content-Type: application/json'
+        ]);
 
-            $mail->setFrom(MAIL_FROM_ADDRESS, MAIL_FROM_NAME);
-            $mail->addAddress($to);
-            $mail->isHTML(true);
-            $mail->Subject = $subject;
-            $mail->Body    = $htmlBody;
-            $mail->CharSet = 'UTF-8';
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
 
-            $mail->send();
+        if ($httpCode >= 200 && $httpCode < 300) {
             return true;
-        } catch (\Exception $e) {
-            $errorLog = dirname(__DIR__) . '/logs/email_errors.log';
-            if (!is_dir(dirname($errorLog))) {
-                mkdir(dirname($errorLog), 0777, true);
-            }
-            $timestamp = date('Y-m-d H:i:s');
-            $logMessage = "[$timestamp] Email failed to $to: " . ($mail->ErrorInfo ?: $e->getMessage()) . "\n";
-            file_put_contents($errorLog, $logMessage, FILE_APPEND);
-
-            if (APP_DEBUG) {
-                error_log("Email failed: " . ($mail->ErrorInfo ?: $e->getMessage()));
-            }
-            return false;
         }
+
+        // Log error
+        $errorLog = dirname(__DIR__) . '/logs/email_errors.log';
+        if (!is_dir(dirname($errorLog))) {
+            mkdir(dirname($errorLog), 0777, true);
+        }
+        $timestamp = date('Y-m-d H:i:s');
+        $logMessage = "[$timestamp] Resend API Failed ($httpCode): $response $error\n";
+        file_put_contents($errorLog, $logMessage, FILE_APPEND);
+
+        return false;
     }
 
     public static function sendVerification(string $to, string $firstname, string $token): bool {

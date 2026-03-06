@@ -27,11 +27,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-// 2. Error handling
+// 2. Error handling & Shutdown
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
+
+// Catch Fatal Errors that set_exception_handler misses
+register_shutdown_function(function () {
+    $error = error_get_last();
+    if ($error !== NULL && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+        if (ob_get_length()) ob_clean();
+        http_response_code(500);
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => false,
+            'message' => 'Fatal Error: ' . $error['message'],
+            'file'    => defined('APP_DEBUG') && APP_DEBUG ? $error['file'] : null,
+            'line'    => defined('APP_DEBUG') && APP_DEBUG ? $error['line'] : null,
+        ]);
+        exit;
+    }
+});
+
 set_exception_handler(function (Throwable $e) {
-    ob_clean(); // ← CLEAR ANY STRAY OUTPUT
+    if (ob_get_length()) ob_clean(); // ← CLEAR ANY STRAY OUTPUT
     http_response_code(500);
     header('Content-Type: application/json');
     echo json_encode([

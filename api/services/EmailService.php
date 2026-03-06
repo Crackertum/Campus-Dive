@@ -24,8 +24,15 @@ class EmailService {
             $mail->SMTPAuth   = true;
             $mail->Username   = MAIL_USERNAME;
             $mail->Password   = MAIL_PASSWORD;
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-            $mail->Port       = MAIL_PORT;
+            
+            // Auto-detect encryption based on port
+            if (MAIL_PORT === 465) {
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+            } else {
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            }
+            
+            $mail->Port = MAIL_PORT;
 
             $mail->setFrom(MAIL_FROM_ADDRESS, MAIL_FROM_NAME);
             $mail->addAddress($to);
@@ -36,17 +43,17 @@ class EmailService {
 
             $mail->send();
             return true;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $errorLog = dirname(__DIR__) . '/logs/email_errors.log';
             if (!is_dir(dirname($errorLog))) {
                 mkdir(dirname($errorLog), 0777, true);
             }
             $timestamp = date('Y-m-d H:i:s');
-            $logMessage = "[$timestamp] Email failed to $to: {$mail->ErrorInfo} " . ($e->getMessage()) . "\n";
+            $logMessage = "[$timestamp] Email failed to $to: " . ($mail->ErrorInfo ?: $e->getMessage()) . "\n";
             file_put_contents($errorLog, $logMessage, FILE_APPEND);
 
             if (APP_DEBUG) {
-                error_log("Email failed: " . $mail->ErrorInfo);
+                error_log("Email failed: " . ($mail->ErrorInfo ?: $e->getMessage()));
             }
             return false;
         }

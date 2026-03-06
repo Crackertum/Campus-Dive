@@ -31,13 +31,13 @@ define('ALLOWED_DOC_TYPES', ['application/pdf', 'application/msword', 'applicati
 define('ALLOWED_IMAGE_TYPES', ['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
 define('AVATAR_MAX_SIZE', 2 * 1024 * 1024); // 2MB
 
-// Email (reuses existing PHPMailer config)
-define('MAIL_HOST', 'smtp.gmail.com');
-define('MAIL_PORT', 587);
-define('MAIL_USERNAME', 'campusdive.org@gmail.com'); 
-define('MAIL_PASSWORD', 'jjemhxhdicokluxn'); 
-define('MAIL_FROM_ADDRESS', 'campusdive.org@gmail.com');
-define('MAIL_FROM_NAME', 'Campus Dive');
+// Email (Uses getenv for Railway/Production, fallbacks for Local)
+define('MAIL_HOST',          getenv('MAIL_HOST')          ?: 'smtp.gmail.com');
+define('MAIL_PORT',          (int)(getenv('MAIL_PORT')    ?: 587));
+define('MAIL_USERNAME',      getenv('MAIL_USERNAME')      ?: 'campusdive.org@gmail.com'); 
+define('MAIL_PASSWORD',      getenv('MAIL_PASSWORD')      ?: 'jjemhxhdicokluxn'); 
+define('MAIL_FROM_ADDRESS',  getenv('MAIL_FROM_ADDRESS')  ?: 'campusdive.org@gmail.com');
+define('MAIL_FROM_NAME',     getenv('MAIL_FROM_NAME')     ?: 'Campus Dive');
 
 // CORS (Split by comma for multiple origins)
 $defaultOrigins = 'http://localhost:5173,https://campus-dive.vercel.app';

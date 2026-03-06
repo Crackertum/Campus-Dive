@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../api/client';
 import { useToast } from '../../context/ToastContext';
 import { StatusBadge, UserAvatar } from '../../components/ui/StatusBadge';
 import { ConfirmModal } from '../../components/ui/Modal';
 import { SkeletonTable } from '../../components/ui/Skeleton';
 import EmptyState from '../../components/ui/EmptyState';
-import { Search, Filter, ChevronLeft, ChevronRight, MoreVertical, Check, X, Trash2, Eye, Users } from 'lucide-react';
+import { Search, Filter, ChevronLeft, ChevronRight, MoreVertical, Check, X, Trash2, Eye, Users, MessageSquare } from 'lucide-react';
 
 export default function StudentsPage() {
     const [students, setStudents] = useState([]);
@@ -14,9 +15,9 @@ export default function StudentsPage() {
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [selected, setSelected] = useState(new Set());
-    const [actionMenu, setActionMenu] = useState(null);
     const [confirmModal, setConfirmModal] = useState(null);
     const toast = useToast();
+    const navigate = useNavigate();
 
     const fetchStudents = useCallback(async (page = 1) => {
         setLoading(true);
@@ -193,6 +194,9 @@ export default function StudentsPage() {
                                                     </button>
                                                     <button onClick={() => updateStatus(s.id, 'under_review')} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-surface-50 dark:hover:bg-surface-800 text-left">
                                                         <Eye className="w-4 h-4 text-blue-500" /> Under Review
+                                                    </button>
+                                                    <button onClick={() => navigate('/messages', { state: { userId: s.id } })} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-surface-50 dark:hover:bg-surface-800 text-left">
+                                                        <MessageSquare className="w-4 h-4 text-primary-500" /> Message
                                                     </button>
                                                     <hr className="my-1 border-surface-100 dark:border-surface-800" />
                                                     <button onClick={() => { setConfirmModal({ action: 'delete', ids: [s.id] }); setActionMenu(null); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-red-50 dark:hover:bg-red-900/10 text-red-600 text-left">

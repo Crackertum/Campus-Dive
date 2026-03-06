@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import api, { API_BASE } from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -21,12 +22,19 @@ export default function MessagesPage() {
     const [attachment, setAttachment] = useState(null);
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
+    const location = useLocation();
 
     useEffect(() => {
         loadConversations();
+
+        // Check if we navigated here to start a specific chat
+        if (location.state?.userId) {
+            loadThread(location.state.userId);
+        }
+
         const interval = setInterval(loadConversations, 10000); // Poll every 10s
         return () => clearInterval(interval);
-    }, []);
+    }, [location]);
 
     const loadConversations = async () => {
         try {

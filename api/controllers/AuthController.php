@@ -86,16 +86,37 @@ class AuthController {
         }
 
         // Send verification email
-        $emailSent = EmailService::sendVerification($v->sanitized('email'), $v->sanitized('firstname'), $token);
+        $emailSent = EmailService::sendVerification(
+            $v->sanitized('email'),
+            $v->sanitized('firstname'),
+            $token
+        );
 
-        // Create welcome notification
-        Notification::create($userId, 'Welcome!', 'Your account has been created. Please verify your email to get started.', 'success');
-
-        if (!$emailSent) {
-            Response::success(null, 'Registration successful! However, we could not send the verification email. Please contact support.', 201);
+        // Create welcome notification (wrapped so it can't crash the response)
+        try {
+            Notification::create(
+                $userId,
+                'Welcome!',
+                'Your account has been created. Please verify your email to get started.',
+                'success'
+            );
+        } catch (Exception $e) {
+            error_log('Notification failed: ' . $e->getMessage());
         }
 
-        Response::success(null, 'Registration successful! Please check your email to verify your account.', 201);
+        if (!$emailSent) {
+            Response::success(
+                null,
+                'Registration successful! However, we could not send the verification email. Please contact support.',
+                201
+            );
+        }
+
+        Response::success(
+            null,
+            'Registration successful! Please check your email to verify your account.',
+            201
+        );
     }
 
     /** GET /api/auth/verify-email */
@@ -106,11 +127,8 @@ class AuthController {
         }
 
         if (User::verifyEmail($token)) {
-            // Get the first allowed origin for redirect
             $origins = explode(',', CORS_ORIGIN);
             $redirectUrl = trim($origins[0]);
-            
-            // Redirect to frontend login with success
             header('Location: ' . $redirectUrl . '/#/login?verified=true');
             exit;
         }
@@ -128,12 +146,16 @@ class AuthController {
         }
 
         $user = User::findByEmail($v->sanitized('email'));
-        
+
         // Always return success to prevent email enumeration
         if ($user) {
             $token = bin2hex(random_bytes(32));
             User::setResetToken($user['id'], $token);
-            EmailService::sendPasswordReset($user['email'], $user['firstname'], $token);
+            try {
+                EmailService::sendPasswordReset($user['email'], $user['firstname'], $token);
+            } catch (Exception $e) {
+                error_log('Password reset email failed: ' . $e->getMessage());
+            }
         }
 
         Response::success(null, 'If an account with that email exists, a reset link has been sent.');

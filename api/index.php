@@ -86,6 +86,10 @@ require_once __DIR__ . '/models/Permission.php';
 require_once __DIR__ . '/models/MarketingTemplate.php';
 require_once __DIR__ . '/models/MarketingCampaign.php';
 require_once __DIR__ . '/models/MarketingQueue.php';
+require_once __DIR__ . '/models/DocumentVersion.php';
+require_once __DIR__ . '/models/DocumentContent.php';
+require_once __DIR__ . '/models/RecruitmentLetter.php';
+require_once __DIR__ . '/models/Analytics.php';
 
 // Services
 require_once __DIR__ . '/services/EmailService.php';

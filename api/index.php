@@ -1,37 +1,10 @@
 <?php
 ob_start(); // ← OUTPUT BUFFERING - MUST BE FIRST LINE
 
-/**
- * Campus Dive API — Front Controller / Router
- * All API requests are routed through this file via .htaccess
- */
-
-// 1. CORS & Preflight (Handle ASAP)
-$defaultOrigins = 'http://localhost:5173,https://campus-dive.vercel.app';
-$envOrigin = getenv('CORS_ORIGIN') ?: $defaultOrigins;
-$allowedOrigins = array_map('trim', explode(',', $envOrigin));
-$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-
-if (in_array($origin, $allowedOrigins)) {
-    header("Access-Control-Allow-Origin: $origin");
-} elseif (empty($origin)) {
-    header("Access-Control-Allow-Origin: *");
-}
-
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization, X-CSRF-Token, X-Requested-With');
-header('Access-Control-Allow-Credentials: true');
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit;
-}
-
-// 2. Error handling & Shutdown
+// 1. Error handling & Shutdown (Register as early as possible)
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 
-// Catch Fatal Errors that set_exception_handler misses
 register_shutdown_function(function () {
     $error = error_get_last();
     if ($error !== NULL && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
@@ -40,7 +13,7 @@ register_shutdown_function(function () {
         header('Content-Type: application/json');
         echo json_encode([
             'success' => false,
-            'message' => 'Fatal Error: ' . $error['message'],
+            'message' => 'Fatal Error (Shutdown): ' . $error['message'],
             'file'    => defined('APP_DEBUG') && APP_DEBUG ? $error['file'] : null,
             'line'    => defined('APP_DEBUG') && APP_DEBUG ? $error['line'] : null,
         ]);
@@ -49,17 +22,23 @@ register_shutdown_function(function () {
 });
 
 set_exception_handler(function (Throwable $e) {
-    if (ob_get_length()) ob_clean(); // ← CLEAR ANY STRAY OUTPUT
+    if (ob_get_length()) ob_clean(); 
     http_response_code(500);
     header('Content-Type: application/json');
     echo json_encode([
         'success' => false,
-        'message' => defined('APP_DEBUG') && APP_DEBUG ? $e->getMessage() : 'Internal server error.',
+        'message' => 'Uncaught Exception: ' . $e->getMessage(),
         'file'    => defined('APP_DEBUG') && APP_DEBUG ? $e->getFile() : null,
         'line'    => defined('APP_DEBUG') && APP_DEBUG ? $e->getLine() : null,
     ]);
     exit;
 });
+
+/**
+ * Campus Dive API — Front Controller / Router
+ */
+
+// 2. CORS & Preflight
 
 // Session
 if (session_status() === PHP_SESSION_NONE) {

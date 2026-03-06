@@ -46,7 +46,9 @@ class AuthController {
 
     /** POST /api/auth/register */
     public static function register(): void {
+        error_log("REGISTER: Start");
         $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+        error_log("REGISTER: Input parsed");
 
         $v = Validator::make($input)
             ->required('firstname')
@@ -62,37 +64,49 @@ class AuthController {
             ->matches('confirm_password', 'password', 'Confirm password', 'Password');
 
         if ($v->fails()) {
+            error_log("REGISTER: Validation failed");
             Response::validationError($v->errors());
         }
 
         // Check duplicate email
         if (User::findByEmail($v->sanitized('email'))) {
+            error_log("REGISTER: Duplicate email");
             Response::error('Email already registered.', 409);
         }
 
         $token = bin2hex(random_bytes(32));
-        $userId = User::create([
-            'firstname'          => $v->sanitized('firstname'),
-            'lastname'           => $v->sanitized('lastname'),
-            'email'              => $v->sanitized('email'),
-            'phone'              => $v->sanitized('phone'),
-            'student_id'         => $v->sanitized('student_id'),
-            'password'           => $input['password'],
-            'verification_token' => $token,
-        ]);
+        error_log("REGISTER: Creating user");
+        
+        try {
+            $userId = User::create([
+                'firstname'          => $v->sanitized('firstname'),
+                'lastname'           => $v->sanitized('lastname'),
+                'email'              => $v->sanitized('email'),
+                'phone'              => $v->sanitized('phone'),
+                'student_id'         => $v->sanitized('student_id'),
+                'password'           => $input['password'],
+                'verification_token' => $token,
+            ]);
+            error_log("REGISTER: User created ID: " . ($userId ?: 'null'));
+        } catch (\Exception $e) {
+            error_log("REGISTER: User model CRASH: " . $e->getMessage());
+            throw $e;
+        }
 
         if (!$userId) {
             Response::error('Registration failed. Please try again.', 500);
         }
 
         // Send verification email
+        error_log("REGISTER: Sending email to " . $v->sanitized('email'));
         $emailSent = EmailService::sendVerification(
             $v->sanitized('email'),
             $v->sanitized('firstname'),
             $token
         );
+        error_log("REGISTER: Email sent status: " . ($emailSent ? 'success' : 'failed'));
 
-        // Create welcome notification (wrapped so it can't crash the response)
+        // Create welcome notification
         try {
             Notification::create(
                 $userId,
@@ -100,21 +114,16 @@ class AuthController {
                 'Your account has been created. Please verify your email to get started.',
                 'success'
             );
-        } catch (Exception $e) {
+            error_log("REGISTER: Notification created");
+        } catch (\Exception $e) {
             error_log('Notification failed: ' . $e->getMessage());
-        }
-
-        if (!$emailSent) {
-            Response::success(
-                null,
-                'Registration successful! However, we could not send the verification email. Please contact support.',
-                201
-            );
         }
 
         Response::success(
             null,
-            'Registration successful! Please check your email to verify your account.',
+            $emailSent 
+                ? 'Registration successful! Please check your email to verify your account.'
+                : 'Registration successful! However, we could not send the verification email. Please contact support.',
             201
         );
     }

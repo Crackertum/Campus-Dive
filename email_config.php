@@ -18,7 +18,7 @@ define('SMTP_FROM_NAME', 'The Campus Dive');
 // IMPORTANT: Set your base URL here!
 // For local testing with XAMPP/WAMP: http://localhost/your-folder
 // For production: https://yourdomain.com
-define('BASE_URL', 'http://localhost/campus_recruitment'); 
+define('BASE_URL', 'http://campus-dive-production.up.railway.app'); 
 // ═══════════════════════════════════════════════════════
 
 function sendEmail($to, $toName, $subject, $body, $isHTML = true) {

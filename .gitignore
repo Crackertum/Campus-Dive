@@ -31,3 +31,4 @@ Thumbs.db
 database_dump.sql
 uploads/*
 !uploads/.gitkeep
+"vendor/" 

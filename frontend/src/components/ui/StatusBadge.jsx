@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import { API_BASE } from '../../api/client';
+
 const STATUS_CONFIG = {
     submitted: { label: 'Submitted', color: 'badge-neutral' },
     pending: { label: 'Pending', color: 'badge-warning' },
@@ -14,6 +17,8 @@ export function StatusBadge({ status }) {
 }
 
 export function UserAvatar({ user, size = 'md' }) {
+    const [imgError, setImgError] = useState(false);
+
     const sizes = {
         sm: 'w-8 h-8 text-xs',
         md: 'w-10 h-10 text-sm',
@@ -21,19 +26,30 @@ export function UserAvatar({ user, size = 'md' }) {
         xl: 'w-20 h-20 text-2xl',
     };
 
-    if (user?.avatar_image) {
+    const hasImage = user?.avatar_image && !imgError;
+
+    if (hasImage) {
         return (
             <img
-                src={`/${user.avatar_image}`}
+                src={user.avatar_image.startsWith('http') ? user.avatar_image : `${API_BASE}/${user.avatar_image}`}
                 alt={`${user.firstname} ${user.lastname}`}
+                onError={() => setImgError(true)}
                 className={`${sizes[size]} rounded-full object-cover ring-2 ring-surface-200 dark:ring-surface-700`}
             />
         );
     }
 
-    const initials = user?.avatar || (user?.firstname?.[0] || '') + (user?.lastname?.[0] || '');
+    // Format initials: Take max 2 characters from firstname/lastname or the avatar field
+    let initials = '';
+    if (user?.avatar && user.avatar.length <= 3) {
+        initials = user.avatar;
+    } else {
+        initials = (user?.firstname?.[0] || '') + (user?.lastname?.[0] || '');
+    }
+    initials = initials.toUpperCase();
+
     return (
-        <div className={`${sizes[size]} rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-semibold ring-2 ring-surface-200 dark:ring-surface-700`}>
+        <div className={`${sizes[size]} rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-bold ring-2 ring-surface-200 dark:ring-surface-700 overflow-hidden`}>
             {initials}
         </div>
     );

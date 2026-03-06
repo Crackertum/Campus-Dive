@@ -156,18 +156,35 @@ $routes = [
     'PUT  /notifications/read-all'  => ['NotificationController', 'markAllRead'],
     'GET  /notifications/unread-count' => ['NotificationController', 'unreadCount'],
 
-    // Logs (Debug Only)
-    'GET  /logs/emails' => function() {
-        if (!defined('APP_DEBUG') || !APP_DEBUG) {
-            Response::error('Logs only accessible in debug mode.', 403);
-        }
-        $logFile = __DIR__ . '/logs/email_errors.log';
-        if (!file_exists($logFile)) {
-            Response::success(['logs' => 'No logs found yet.'], 'No email error logs available.');
-        }
         $content = file_get_contents($logFile);
         echo "<pre>$content</pre>";
         exit;
+    },
+
+    // Debug DB Inspector
+    'GET /debug/db' => function() {
+        if (!defined('APP_DEBUG') || !APP_DEBUG) {
+            Response::error('Debug info only accessible in debug mode.', 403);
+        }
+        
+        try {
+            $db = Database::getInstance();
+            $roles = $db->query("SELECT * FROM roles")->fetchAll();
+            $userStats = $db->query("SELECT role, role_id, status, COUNT(*) as count FROM users GROUP BY role, role_id, status")->fetchAll();
+            $samples = $db->query("SELECT id, firstname, lastname, email, role, role_id, status FROM users ORDER BY id DESC LIMIT 5")->fetchAll();
+            
+            Response::success([
+                'constants' => [
+                    'ROLE_STUDENT' => ROLE_STUDENT,
+                    'STATUS_SUBMITTED' => STATUS_SUBMITTED
+                ],
+                'roles_table' => $roles,
+                'user_stats' => $userStats,
+                'recent_users' => $samples
+            ]);
+        } catch (Exception $e) {
+            Response::error("DB Debug Failed: " . $e->getMessage(), 500);
+        }
     },
 ];
 

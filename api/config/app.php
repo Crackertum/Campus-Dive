@@ -36,7 +36,15 @@ define('MAIL_HOST',          getenv('MAIL_HOST')          ?: 'smtp.gmail.com');
 define('MAIL_PORT',          (int)(getenv('MAIL_PORT')    ?: 587));
 define('MAIL_USERNAME',      getenv('MAIL_USERNAME')      ?: 'campusdive.org@gmail.com'); 
 define('MAIL_PASSWORD',      getenv('MAIL_PASSWORD')      ?: 'jjemhxhdicokluxn'); 
-define('MAIL_FROM_ADDRESS',  getenv('MAIL_FROM_ADDRESS')  ?: 'campusdive.org@gmail.com');
+
+// Resend.com compatibility: 
+// If using Resend (password starts with re_), we must use a verified domain.
+// Fallback to onboarding@resend.dev if the from address looks like a personal email (gmail/outlook etc)
+$rawFrom = getenv('MAIL_FROM_ADDRESS') ?: 'campusdive.org@gmail.com';
+if (str_starts_with(MAIL_PASSWORD, 're_') && (str_contains($rawFrom, 'gmail.com') || str_contains($rawFrom, 'outlook.com'))) {
+    $rawFrom = 'onboarding@resend.dev';
+}
+define('MAIL_FROM_ADDRESS',  $rawFrom);
 define('MAIL_FROM_NAME',     getenv('MAIL_FROM_NAME')     ?: 'Campus Dive');
 
 // CORS (Split by comma for multiple origins)

@@ -10,6 +10,8 @@ import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import StudentDashboard from './pages/student/StudentDashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import StudentsPage from './pages/admin/StudentsPage';
+import RolesPage from './pages/admin/RolesPage';
+import AnalyticsPage from './pages/admin/AnalyticsPage';
 import MessagesPage from './pages/messages/MessagesPage';
 import DocumentsPage from './pages/student/DocumentsPage';
 import SettingsPage from './pages/student/SettingsPage';
@@ -84,6 +86,16 @@ export default function App() {
         <Route path="/admin/students" element={
           <RouteGuard roles={['admin', 'Admin', 'manager', 'Manager', 'interviewer', 'Interviewer']}>
             <StudentsPage />
+          </RouteGuard>
+        } />
+        <Route path="/admin/roles" element={
+          <RouteGuard roles={['admin', 'Admin']}>
+            <RolesPage />
+          </RouteGuard>
+        } />
+        <Route path="/admin/analytics" element={
+          <RouteGuard roles={['admin', 'Admin', 'manager', 'Manager']}>
+            <AnalyticsPage />
           </RouteGuard>
         } />
 

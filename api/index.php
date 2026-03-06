@@ -114,6 +114,11 @@ if (strpos($path, $basePath) === 0) {
 $path = rtrim($path, '/') ?: '/';
 $method = $_SERVER['REQUEST_METHOD'];
 
+// Debug: Log all requests
+if (defined('APP_DEBUG') && APP_DEBUG) {
+    error_log("REQUEST: {$method} {$path} (Original: {$_SERVER['REQUEST_URI']}, Script: {$_SERVER['SCRIPT_NAME']}, Base: {$basePath})");
+}
+
 // ────────────────────────────────────────────
 // Route Definitions
 // ────────────────────────────────────────────
@@ -172,30 +177,37 @@ $routes = [
 
     // Debug DB Inspector
     'GET /debug/db' => function() {
-        if (!defined('APP_DEBUG') || !APP_DEBUG) {
-            Response::error('Debug info only accessible in debug mode.', 403);
-        }
-        
-        try {
-            $db = Database::getInstance();
-            $roles = $db->query("SELECT * FROM roles")->fetchAll();
-            $userStats = $db->query("SELECT role, role_id, status, COUNT(*) as count FROM users GROUP BY role, role_id, status")->fetchAll();
-            $samples = $db->query("SELECT id, firstname, lastname, email, role, role_id, status FROM users ORDER BY id DESC LIMIT 5")->fetchAll();
-            
-            Response::success([
-                'constants' => [
-                    'ROLE_STUDENT' => ROLE_STUDENT,
-                    'STATUS_SUBMITTED' => STATUS_SUBMITTED
-                ],
-                'roles_table' => $roles,
-                'user_stats' => $userStats,
-                'recent_users' => $samples
-            ]);
-        } catch (Exception $e) {
-            Response::error("DB Debug Failed: " . $e->getMessage(), 500);
-        }
+        return handle_db_debug();
+    },
+    'GET /api/debug/db' => function() {
+        return handle_db_debug();
     },
 ];
+
+function handle_db_debug() {
+    if (!defined('APP_DEBUG') || !APP_DEBUG) {
+        Response::error('Debug info only accessible in debug mode.', 403);
+    }
+    
+    try {
+        $db = Database::getInstance();
+        $rolesResult = $db->query("SELECT * FROM roles")->fetchAll();
+        $userStatsResult = $db->query("SELECT role, role_id, status, COUNT(*) as count FROM users GROUP BY role, role_id, status")->fetchAll();
+        $samplesResult = $db->query("SELECT id, firstname, lastname, email, role, role_id, status FROM users ORDER BY id DESC LIMIT 5")->fetchAll();
+        
+        Response::success([
+            'constants' => [
+                'ROLE_STUDENT' => ROLE_STUDENT,
+                'STATUS_SUBMITTED' => STATUS_SUBMITTED
+            ],
+            'roles_table' => $rolesResult,
+            'user_stats' => $userStatsResult,
+            'recent_users' => $samplesResult
+        ]);
+    } catch (Exception $e) {
+        Response::error("DB Debug Failed: " . $e->getMessage(), 500);
+    }
+}
 
 // Parameterized routes (with :id)
 $paramRoutes = [

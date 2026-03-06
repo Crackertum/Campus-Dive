@@ -24,7 +24,7 @@ class EmailService {
             $mail->SMTPAuth   = true;
             $mail->Username   = MAIL_USERNAME;
             $mail->Password   = MAIL_PASSWORD;
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
             $mail->Port       = MAIL_PORT;
 
             $mail->setFrom(MAIL_FROM_ADDRESS, MAIL_FROM_NAME);

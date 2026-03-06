@@ -14,10 +14,7 @@ class StudentController {
         $unreadNotifications = Notification::getUnreadCount($user['id']);
 
         // Application stages for progress tracker
-        $db = Database::getInstance();
-        $stagesStmt = $db->prepare('SELECT * FROM application_stages WHERE user_id = ? ORDER BY entered_at ASC');
-        $stagesStmt->execute([$user['id']]);
-        $stages = $stagesStmt->fetchAll();
+        $stages = ApplicationStage::getByUserId($user['id']);
 
         unset($user['password'], $user['verification_token'], $user['reset_token'], $user['reset_token_expires']);
 

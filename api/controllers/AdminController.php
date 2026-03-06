@@ -71,17 +71,8 @@ class AdminController {
         unset($student['password'], $student['verification_token'], $student['reset_token'], $student['reset_token_expires']);
 
         $documents = Document::getByUserId($id);
-
-        // Get interview slots
-        $db = Database::getInstance();
-        $interviewsStmt = $db->prepare('SELECT * FROM interview_slots WHERE booked_by = ? ORDER BY start_time DESC');
-        $interviewsStmt->execute([$id]);
-        $interviews = $interviewsStmt->fetchAll();
-
-        // Get stages
-        $stagesStmt = $db->prepare('SELECT * FROM application_stages WHERE user_id = ? ORDER BY entered_at ASC');
-        $stagesStmt->execute([$id]);
-        $stages = $stagesStmt->fetchAll();
+        $interviews = InterviewSlot::getByUserId($id);
+        $stages = ApplicationStage::getByUserId($id);
 
         Response::success([
             'student'    => $student,
@@ -110,8 +101,7 @@ class AdminController {
         User::update($id, ['status' => $input['status']]);
 
         // Log stage transition
-        $db = Database::getInstance();
-        $db->prepare('INSERT INTO application_stages (user_id, stage_name) VALUES (?, ?)')->execute([$id, $input['status']]);
+        ApplicationStage::create($id, $input['status']);
 
         // Notify student
         $statusLabels = [
@@ -175,10 +165,10 @@ class AdminController {
         RoleMiddleware::require([ROLE_ADMIN, 'Admin'], $user);
 
         $roles = Role::getAll();
-        $allPermissions = Role::getAllPermissions();
+        $allPermissions = Permission::getAll();
 
         foreach ($roles as &$role) {
-            $role['permissions'] = Role::getPermissions($role['id']);
+            $role['permissions'] = Permission::getByRoleId($role['id']);
         }
 
         Response::success([
@@ -199,7 +189,7 @@ class AdminController {
             Response::error('Permission IDs required.', 400);
         }
 
-        if (Role::syncPermissions($id, $input['permission_ids'])) {
+        if (Permission::syncForRole($id, $input['permission_ids'])) {
             Response::success(null, 'Role permissions updated.');
         } else {
             Response::error('Failed to update role permissions.', 500);

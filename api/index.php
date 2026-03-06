@@ -80,6 +80,12 @@ require_once __DIR__ . '/models/Document.php';
 require_once __DIR__ . '/models/Message.php';
 require_once __DIR__ . '/models/Notification.php';
 require_once __DIR__ . '/models/Role.php';
+require_once __DIR__ . '/models/ApplicationStage.php';
+require_once __DIR__ . '/models/InterviewSlot.php';
+require_once __DIR__ . '/models/Permission.php';
+require_once __DIR__ . '/models/MarketingTemplate.php';
+require_once __DIR__ . '/models/MarketingCampaign.php';
+require_once __DIR__ . '/models/MarketingQueue.php';
 
 // Services
 require_once __DIR__ . '/services/EmailService.php';

@@ -109,9 +109,12 @@ class User {
         $sql .= " LIMIT {$limit} OFFSET {$offset}";
         $stmt = self::db()->prepare($sql);
         $stmt->execute($params);
+        $data = $stmt->fetchAll();
+
+        error_log("GEt_ALL_STUDENTS: Count=" . count($data) . " Query=" . $sql . " Params=" . json_encode($params));
 
         return [
-            'data' => $stmt->fetchAll(),
+            'data' => $data,
             'pagination' => [
                 'page' => $page,
                 'limit' => $limit,

@@ -1,5 +1,5 @@
 <?php
-require_once 'api/config/app.php';
+require_once __DIR__ . '/config/app.php';
 
 header('Content-Type: text/plain');
 echo "--- Campus Dive Email Config Check ---\n";

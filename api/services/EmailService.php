@@ -68,7 +68,7 @@ class EmailService {
                 $mail->send();
                 return true;
             } catch (Exception $e) {
-                error_log("PHPMailer SMTP Failed: {$mail->ErrorInfo}");
+                error_log("PHPMailer SMTP Failed for $to: {$mail->ErrorInfo} (Host: " . MAIL_HOST . ", User: " . MAIL_USERNAME . ")");
             }
         }
 

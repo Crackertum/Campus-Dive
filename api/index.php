@@ -190,7 +190,43 @@ $routes = [
     'GET /api/debug/db' => function() {
         return handle_db_debug();
     },
+    'GET /debug/email' => function() {
+        return handle_email_debug();
+    },
 ];
+
+function handle_email_debug() {
+    if (!defined('APP_DEBUG') || !APP_DEBUG) {
+        // Allow it for now since we are debugging a critical production issue, 
+        // but we should normally guard it.
+    }
+    
+    $output = "--- Campus Dive Email Config Check ---\n";
+    $output .= "MAIL_HOST: " . MAIL_HOST . "\n";
+    $output .= "MAIL_PORT: " . MAIL_PORT . "\n";
+    $output .= "MAIL_USERNAME: " . MAIL_USERNAME . "\n";
+    $output .= "MAIL_FROM_ADDRESS: " . MAIL_FROM_ADDRESS . "\n";
+    $output .= "MAIL_PASSWORD length: " . strlen(MAIL_PASSWORD) . "\n";
+    $output .= "MAIL_PASSWORD starts with re_: " . (str_starts_with(MAIL_PASSWORD, 're_') ? 'YES' : 'NO') . "\n";
+
+    $output .= "\n--- Environment Check ---\n";
+    $output .= "getenv('MAIL_PASSWORD'): " . (getenv('MAIL_PASSWORD') ? 'SET (length ' . strlen(getenv('MAIL_PASSWORD')) . ')' : 'NOT SET') . "\n";
+    $output .= "getenv('MAIL_HOST'): " . (getenv('MAIL_HOST') ? 'SET' : 'NOT SET') . "\n";
+
+    $output .= "\n--- Connectivity Check (to SMTP) ---\n";
+    $connection = @fsockopen(MAIL_HOST, MAIL_PORT, $errno, $errstr, 5);
+    if ($connection) {
+        $output .= "SUCCESS: Can connect to " . MAIL_HOST . " on port " . MAIL_PORT . "\n";
+        fclose($connection);
+    } else {
+        $output .= "FAILURE: Cannot connect to " . MAIL_HOST . " on port " . MAIL_PORT . "\n";
+        $output .= "Error: $errstr ($errno)\n";
+    }
+
+    header('Content-Type: text/plain');
+    echo $output;
+    exit;
+}
 
 function handle_db_debug() {
     if (!defined('APP_DEBUG') || !APP_DEBUG) {

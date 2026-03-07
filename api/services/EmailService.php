@@ -16,43 +16,66 @@ use PHPMailer\PHPMailer\Exception;
 class EmailService {
 
     public static function send(string $to, string $subject, string $htmlBody): bool {
-        $apiKey = MAIL_PASSWORD; // Assuming this is the 're_xxxx' Resend key
-        $apiUrl = 'https://api.resend.com/emails';
+        $apiKey = MAIL_PASSWORD;
 
-        $data = [
-            'from'    => MAIL_FROM_NAME . ' <' . MAIL_FROM_ADDRESS . '>',
-            'to'      => [$to],
-            'subject' => $subject,
-            'html'    => $htmlBody,
-        ];
+        // If it looks like a Resend key, use Resend API
+        if (str_starts_with($apiKey, 're_')) {
+            $apiUrl = 'https://api.resend.com/emails';
+            $data = [
+                'from'    => MAIL_FROM_NAME . ' <' . MAIL_FROM_ADDRESS . '>',
+                'to'      => [$to],
+                'subject' => $subject,
+                'html'    => $htmlBody,
+            ];
 
-        $ch = curl_init();
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $apiUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Authorization: Bearer ' . $apiKey,
+                'Content-Type: application/json'
+            ]);
 
-        curl_setopt($ch, CURLOPT_URL, $apiUrl);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Authorization: Bearer ' . $apiKey,
-            'Content-Type: application/json'
-        ]);
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $error = curl_error($ch);
+            curl_close($ch);
 
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $error = curl_error($ch);
-        curl_close($ch);
-
-        if ($httpCode >= 200 && $httpCode < 300) {
-            return true;
+            if ($httpCode >= 200 && $httpCode < 300) {
+                return true;
+            }
+            error_log("Resend API Failed ($httpCode): $response $error");
+        } 
+        // Otherwise, fallback to SMTP/PHPMailer
+        else {
+            try {
+                $mail = new PHPMailer(true);
+                $mail->isSMTP();
+                $mail->Host       = MAIL_HOST;
+                $mail->SMTPAuth   = true;
+                $mail->Username   = MAIL_USERNAME;
+                $mail->Password   = MAIL_PASSWORD;
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                $mail->Port       = MAIL_PORT;
+                $mail->setFrom(MAIL_FROM_ADDRESS, MAIL_FROM_NAME);
+                $mail->addAddress($to);
+                $mail->isHTML(true);
+                $mail->Subject = $subject;
+                $mail->Body    = $htmlBody;
+                $mail->AltBody = strip_tags($htmlBody);
+                $mail->send();
+                return true;
+            } catch (Exception $e) {
+                error_log("PHPMailer SMTP Failed: {$mail->ErrorInfo}");
+            }
         }
 
-        // Log error
+        // Persistent logging for failures
         $errorLog = dirname(__DIR__) . '/logs/email_errors.log';
-        if (!is_dir(dirname($errorLog))) {
-            mkdir(dirname($errorLog), 0777, true);
-        }
-        $timestamp = date('Y-m-d H:i:s');
-        $logMessage = "[$timestamp] Resend API Failed ($httpCode): $response $error\n";
+        if (!is_dir(dirname($errorLog))) mkdir(dirname($errorLog), 0777, true);
+        $logMessage = "[" . date('Y-m-d H:i:s') . "] Email delivery failed for $to. Host: " . MAIL_HOST . "\n";
         file_put_contents($errorLog, $logMessage, FILE_APPEND);
 
         return false;

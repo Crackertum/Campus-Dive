@@ -15,6 +15,7 @@ export default function StudentsPage() {
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [selected, setSelected] = useState(new Set());
+    const [actionMenu, setActionMenu] = useState(null);
     const [confirmModal, setConfirmModal] = useState(null);
     const toast = useToast();
     const navigate = useNavigate();

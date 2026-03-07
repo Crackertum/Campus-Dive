@@ -28,7 +28,7 @@ class ApiClient {
 
         const response = await fetch(url, config);
 
-        // ← SAFE JSON PARSING - won't crash on empty response
+        // SAFE JSON PARSING - won't crash on empty response
         const text = await response.text();
         const data = text ? JSON.parse(text) : {};
 

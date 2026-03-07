@@ -6,7 +6,7 @@ import { useToast } from '../../context/ToastContext';
 import { UserAvatar } from '../../components/ui/StatusBadge';
 import { SkeletonCard } from '../../components/ui/Skeleton';
 import EmptyState from '../../components/ui/EmptyState';
-import { Send, Paperclip, Search, MessageSquare, CheckCheck, X, File, Plus, UserPlus } from 'lucide-react';
+import { Send, Paperclip, Search, MessageSquare, CheckCheck, X, File, Plus, UserPlus, ArrowLeft } from 'lucide-react';
 
 export default function MessagesPage() {
     const { user } = useAuth();
@@ -199,8 +199,8 @@ export default function MessagesPage() {
                             <>
                                 {/* Chat Header */}
                                 <div className="flex items-center gap-3 p-4 border-b border-surface-100 dark:border-surface-800">
-                                    <button onClick={() => setActiveThread(null)} className="sm:hidden btn-icon w-8 h-8">
-                                        ←
+                                    <button onClick={() => setActiveThread(null)} className="sm:hidden btn-icon w-8 h-8 flex items-center justify-center">
+                                        <ArrowLeft className="w-4 h-4" />
                                     </button>
                                     <UserAvatar user={otherUser} size="sm" />
                                     <div>

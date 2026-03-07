@@ -207,6 +207,7 @@ function handle_email_debug() {
     $output = "--- Campus Dive Email Config Check ---\n";
     $output .= "MAIL_HOST: " . MAIL_HOST . "\n";
     $output .= "MAIL_PORT: " . MAIL_PORT . "\n";
+    $output .= "MAIL_ENCRYPTION: " . (defined('MAIL_ENCRYPTION') ? MAIL_ENCRYPTION : 'not defined') . "\n";
     $output .= "MAIL_USERNAME: " . MAIL_USERNAME . "\n";
     $output .= "MAIL_FROM_ADDRESS: " . MAIL_FROM_ADDRESS . "\n";
     $output .= "MAIL_PASSWORD length: " . strlen(MAIL_PASSWORD) . "\n";

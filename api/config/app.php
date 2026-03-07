@@ -33,7 +33,8 @@ define('AVATAR_MAX_SIZE', 2 * 1024 * 1024); // 2MB
 
 // Email (Uses getenv for Railway/Production, fallbacks for Local)
 define('MAIL_HOST',          getenv('MAIL_HOST')          ?: 'smtp.gmail.com');
-define('MAIL_PORT',          (int)(getenv('MAIL_PORT')    ?: 587));
+define('MAIL_PORT',          (int)(getenv('MAIL_PORT')    ?: 465));
+define('MAIL_ENCRYPTION',    getenv('MAIL_ENCRYPTION')    ?: 'ssl');
 define('MAIL_USERNAME',      getenv('MAIL_USERNAME')      ?: 'campusdive.org@gmail.com'); 
 define('MAIL_PASSWORD',      getenv('MAIL_PASSWORD')      ?: 'jjemhxhdicokluxn'); 
 

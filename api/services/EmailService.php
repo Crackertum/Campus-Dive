@@ -57,7 +57,7 @@ class EmailService {
                 $mail->SMTPAuth   = true;
                 $mail->Username   = MAIL_USERNAME;
                 $mail->Password   = MAIL_PASSWORD;
-                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                $mail->SMTPSecure = (MAIL_PORT == 465) ? PHPMailer::ENCRYPTION_SMTPS : PHPMailer::ENCRYPTION_STARTTLS;
                 $mail->Port       = MAIL_PORT;
                 $mail->setFrom(MAIL_FROM_ADDRESS, MAIL_FROM_NAME);
                 $mail->addAddress($to);

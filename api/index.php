@@ -193,6 +193,9 @@ $routes = [
     'GET /debug/email' => function() {
         return handle_email_debug();
     },
+    'GET /api/debug/email' => function() {
+        return handle_email_debug();
+    },
 ];
 
 function handle_email_debug() {

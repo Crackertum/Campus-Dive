@@ -1,11 +1,7 @@
 <?php
 require_once 'config.php';
-require_once 'PHPMailer/src/PHPMailer.php';
-require_once 'PHPMailer/src/Exception.php';
-require_once 'PHPMailer/src/SMTP.php';
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+require_once 'api/config/app.php';
+require_once 'api/services/EmailService.php';
 
 header('Content-Type: application/json');
 
@@ -56,60 +52,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 function sendNotificationEmail($student, $status) {
-    // Basic email logic - expand with templates later
-    $mail = new PHPMailer(true);
-    try {
-        // Server settings (Mock settings - user needs to configure these)
-        $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com'; 
-        $mail->SMTPAuth   = true;
-        // Ideally these should come from config or env
-        $mail->Username   = 'your_email@gmail.com'; 
-        $mail->Password   = 'your_app_password';   
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = 587;
-
-        $mail->setFrom('admin@campusdive.com', 'Campus Dive Admin');
-        $mail->addAddress($student['email'], $student['firstname']);
-
-        $mail->isHTML(true);
-        
-        $subject = "Application Update - Campus Dive";
-        $body = "Dear " . $student['firstname'] . ",<br><br>";
-        
-        switch ($status) {
-            case 'under_review':
-                $subject = "Application Under Review";
-                $body .= "Your application is now being reviewed by our team. We will get back to you shortly.";
-                break;
-            case 'interview_scheduled':
-                $subject = "Interview Invitation";
-                $body .= "Congratulations! You have been shortlisted for an interview. Please check your dashboard for details.";
-                break;
-            case 'approved':
-                $subject = "Application Approved!";
-                $body .= "We are pleased to inform you that your application has been APPROVED! Welcome aboard.";
-                break;
-            case 'rejected':
-                $subject = "Application Status Update";
-                $body .= "Thank you for your interest. Unfortunately, we are unable to proceed with your application at this time.";
-                break;
-            default:
-                return; // Don't send email for minor status changes or if not configured
-        }
-        
-        $body .= "<br><br>Best Regards,<br>The Recruitment Team";
-
-        $mail->Subject = $subject;
-        $mail->Body    = $body;
-
-        // $mail->send(); // Commented out to prevent crash on unconfigured SMTP
-        // In production, uncomment and ensure SMTP is set up.
-        // For now, we simulate success.
-        
-    } catch (Exception $e) {
-        // Log error silently
-        error_log("Message could not be sent. Mailer Error: {$mail->ErrorInfo}");
+    if (session_status() === PHP_SESSION_NONE) session_start();
+    
+    $subject = "Application Update - Campus Dive";
+    $body = "Dear " . $student['firstname'] . ",<br><br>";
+    
+    switch ($status) {
+        case 'under_review':
+            $subject = "Application Under Review";
+            $body .= "Your application is now being reviewed by our team. We will get back to you shortly.";
+            break;
+        case 'interview_scheduled':
+            $subject = "Interview Invitation";
+            $body .= "Congratulations! You have been shortlisted for an interview. Please check your dashboard for details.";
+            break;
+        case 'approved':
+            $subject = "Application Approved!";
+            $body .= "We are pleased to inform you that your application has been APPROVED! Welcome aboard.";
+            break;
+        case 'rejected':
+            $subject = "Application Status Update";
+            $body .= "Thank you for your interest. Unfortunately, we are unable to proceed with your application at this time.";
+            break;
+        default:
+            return; // Don't send email for minor status changes or if not configured
     }
+    
+    $body .= "<br><br>Best Regards,<br>The Recruitment Team";
+    
+    // Unified EmailService handles Redsend/SMTP and logging automatically
+    EmailService::send($student['email'], $subject, $body);
 }
 ?>

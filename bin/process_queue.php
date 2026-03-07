@@ -1,11 +1,7 @@
 <?php
 require_once dirname(__DIR__) . '/config.php';
-require_once dirname(__DIR__) . '/PHPMailer/src/PHPMailer.php';
-require_once dirname(__DIR__) . '/PHPMailer/src/SMTP.php';
-require_once dirname(__DIR__) . '/PHPMailer/src/Exception.php';
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+require_once dirname(__DIR__) . '/api/config/app.php';
+require_once dirname(__DIR__) . '/api/services/EmailService.php';
 
 // Prevent timeout
 set_time_limit(0); 
@@ -42,34 +38,11 @@ if ($result->num_rows > 0) {
 }
 
 function sendEmail($to, $subject, $body, $queueId) {
-    $mail = new PHPMailer(true);
-    try {
-        // SMTP Settings (Mock)
-        $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com'; 
-        $mail->SMTPAuth   = true;
-        $mail->Username   = 'admin@campusdive.com'; 
-        $mail->Password   = 'password';   
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = 587;
+    // Add Tracking Pixel
+    $trackingUrl = "http://localhost/campus%20recruitment/track.php?id=$queueId&type=open";
+    $pixel = "<img src='$trackingUrl' width='1' height='1' style='display:none;' />";
+    $fullBody = $body . $pixel;
 
-        $mail->setFrom('admin@campusdive.com', 'Campus Dive');
-        $mail->addAddress($to);
-
-        $mail->isHTML(true);
-        $mail->Subject = $subject;
-        
-        // Add Tracking Pixel
-        $trackingUrl = "http://localhost/campus%20recruitment/track.php?id=$queueId&type=open";
-        $pixel = "<img src='$trackingUrl' width='1' height='1' style='display:none;' />";
-        $mail->Body    = $body . $pixel;
-
-        // In production: $mail->send();
-        // Simulating success for dev:
-        return true; 
-        
-    } catch (Exception $e) {
-        return false;
-    }
+    return EmailService::send($to, $subject, $fullBody);
 }
 ?>

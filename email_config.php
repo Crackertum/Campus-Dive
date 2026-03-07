@@ -8,41 +8,12 @@ require 'vendor/autoload.php';
 
 // ═══════════════════════════════════════════════════════
 // UPDATE THESE 4 VALUES
-define('SMTP_HOST', 'smtp.gmail.com');
-define('SMTP_PORT', 587);
-define('SMTP_USERNAME', 'campusdive.org@gmail.com');
-define('SMTP_PASSWORD', 'jjemhxhdicokluxn');
-define('SMTP_FROM_EMAIL', 'campusdive.org@gmail.com');
-define('SMTP_FROM_NAME', 'The Campus Dive');
-
-// IMPORTANT: Set your base URL here!
-// For local testing with XAMPP/WAMP: http://localhost/your-folder
-// For production: https://yourdomain.com
-define('BASE_URL', 'http://campus-dive-production.up.railway.app'); 
-// ═══════════════════════════════════════════════════════
+// DEPRECATED: Please use api/services/EmailService.php instead.
+// Removing hardcoded credentials for security.
+require_once __DIR__ . '/api/services/EmailService.php';
 
 function sendEmail($to, $toName, $subject, $body, $isHTML = true) {
-    $mail = new PHPMailer(true);
-    try {
-        $mail->isSMTP();
-        $mail->Host       = SMTP_HOST;
-        $mail->SMTPAuth   = true;
-        $mail->Username   = SMTP_USERNAME;
-        $mail->Password   = SMTP_PASSWORD;
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = SMTP_PORT;
-        $mail->setFrom(SMTP_FROM_EMAIL, SMTP_FROM_NAME);
-        $mail->addAddress($to, $toName);
-        $mail->isHTML($isHTML);
-        $mail->Subject = $subject;
-        $mail->Body    = $body;
-        $mail->AltBody = strip_tags($body);
-        $mail->send();
-        return true;
-    } catch (Exception $e) {
-        error_log("Email failed: {$mail->ErrorInfo}");
-        return false;
-    }
+    return EmailService::send($to, $subject, $body);
 }
 
 function sendVerificationEmail($to, $name, $token) {

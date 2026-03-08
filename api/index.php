@@ -116,10 +116,15 @@ $scriptName = $_SERVER['SCRIPT_NAME'];
 $basePath = str_replace('/index.php', '', $scriptName);
 $path = parse_url($requestUri, PHP_URL_PATH);
 
-if (strpos($path, $basePath) === 0) {
-    $path = substr($path, strlen($basePath));
-}
 $path = rtrim($path, '/') ?: '/';
+
+// Specialized logic for Railway/Vercel: Strip /api prefix if present
+if (str_starts_with($path, '/api/')) {
+    $path = substr($path, 4);
+}
+if ($path === '/api') {
+    $path = '/';
+}
 $method = $_SERVER['REQUEST_METHOD'];
 
 // Debug: Log all requests

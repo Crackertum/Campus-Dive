@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { useTheme } from '../../context/ThemeContext';
 import { User, Mail, Lock, Eye, EyeOff, Phone, CreditCard, ArrowRight, Moon, Sun, CheckCircle } from 'lucide-react';
+import api from '../../api/client';
 
 export default function RegisterPage() {
     const [form, setForm] = useState({

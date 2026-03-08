@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { useTheme } from '../../context/ThemeContext';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Moon, Sun, CheckCircle } from 'lucide-react';
+import api from '../../api/client';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');

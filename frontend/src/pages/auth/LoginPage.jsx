@@ -115,7 +115,7 @@ export default function LoginPage() {
                                     value={email}
                                     onChange={e => setEmail(e.target.value)}
                                     className={`input-field pl-12 ${errors.email ? 'border-red-500 focus:ring-red-500/50' : ''}`}
-                                    placeholder="you@university.edu"
+                                    placeholder="user@gmail.com"
                                     required
                                 />
                             </div>

@@ -2,9 +2,10 @@
 // Google OAuth Configuration
 // Get credentials from: https://console.cloud.google.com/apis/credentials
 
-define('GOOGLE_CLIENT_ID', 'your-google-client-id.apps.googleusercontent.com');
-define('GOOGLE_CLIENT_SECRET', 'your-google-client-secret');
-define('GOOGLE_REDIRECT_URI', 'http://localhost/campus_recruitment/google_callback.php');
+define('GOOGLE_CLIENT_ID', getenv('GOOGLE_CLIENT_ID') ?: '580964465243-6pduk4son190sfmn2fb3a7u34k1l4vlb.apps.googleusercontent.com');
+define('GOOGLE_CLIENT_SECRET', getenv('GOOGLE_CLIENT_SECRET') ?: 'your-google-client-secret');
+// Update this to match your actual domain in production
+define('GOOGLE_REDIRECT_URI', getenv('GOOGLE_REDIRECT_URI') ?: 'https://campus-dive-production.up.railway.app/google_callback.php');
 
 // Google API Client Library
 // Download from: https://github.com/googleapis/google-api-php-client
@@ -98,9 +99,13 @@ function handleGoogleCallback($code) {
             $_SESSION['role'] = $role;
             $_SESSION['avatar'] = $avatar;
 
-            // Send welcome email
-            sendNotificationEmail($userId, 'Welcome to The Campus Dive', 
-                'Thank you for signing up! Your application is pending approval.');
+            // Send welcome email (using existing update_status.php logic or similar)
+            if (function_exists('sendNotificationEmail')) {
+                // Fetch user data for the notification function
+                $user_query = $conn->query("SELECT * FROM users WHERE id = $userId");
+                $user_data = $user_query->fetch_assoc();
+                sendNotificationEmail($user_data, 'pending');
+            }
 
             return ['success' => true, 'new_user' => true];
         }

@@ -128,7 +128,7 @@ export default function RegisterPage() {
                                 <label className="block text-sm font-medium mb-1.5">First Name</label>
                                 <div className="relative">
                                     <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" />
-                                    <input type="text" value={form.firstname} onChange={update('firstname')} className={`input-field pl-11 ${errors.firstname ? 'border-red-500' : ''}`} placeholder="John" required />
+                                    <input type="text" value={form.firstname} onChange={update('firstname')} className={`input-field pl-11 ${errors.firstname ? 'border-red-500' : ''}`} placeholder="Campus" required />
                                 </div>
                                 {errors.firstname && <p className="mt-1 text-xs text-red-500">{errors.firstname}</p>}
                             </div>
@@ -136,7 +136,7 @@ export default function RegisterPage() {
                                 <label className="block text-sm font-medium mb-1.5">Last Name</label>
                                 <div className="relative">
                                     <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" />
-                                    <input type="text" value={form.lastname} onChange={update('lastname')} className={`input-field pl-11 ${errors.lastname ? 'border-red-500' : ''}`} placeholder="Doe" required />
+                                    <input type="text" value={form.lastname} onChange={update('lastname')} className={`input-field pl-11 ${errors.lastname ? 'border-red-500' : ''}`} placeholder="Dive" required />
                                 </div>
                                 {errors.lastname && <p className="mt-1 text-xs text-red-500">{errors.lastname}</p>}
                             </div>
@@ -146,7 +146,7 @@ export default function RegisterPage() {
                             <label className="block text-sm font-medium mb-1.5">Email</label>
                             <div className="relative">
                                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" />
-                                <input type="email" value={form.email} onChange={update('email')} className={`input-field pl-11 ${errors.email ? 'border-red-500' : ''}`} placeholder="john@university.edu" required />
+                                <input type="email" value={form.email} onChange={update('email')} className={`input-field pl-11 ${errors.email ? 'border-red-500' : ''}`} placeholder="user@gmail.com" required />
                             </div>
                             {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
                         </div>
@@ -164,7 +164,7 @@ export default function RegisterPage() {
                                 <label className="block text-sm font-medium mb-1.5">Student ID</label>
                                 <div className="relative">
                                     <CreditCard className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" />
-                                    <input type="text" value={form.student_id} onChange={update('student_id')} className={`input-field pl-11 ${errors.student_id ? 'border-red-500' : ''}`} placeholder="STU-001" required />
+                                    <input type="text" value={form.student_id} onChange={update('student_id')} className={`input-field pl-11 ${errors.student_id ? 'border-red-500' : ''}`} placeholder="BST/001/2000" required />
                                 </div>
                                 {errors.student_id && <p className="mt-1 text-xs text-red-500">{errors.student_id}</p>}
                             </div>

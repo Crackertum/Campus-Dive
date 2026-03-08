@@ -196,6 +196,24 @@ $routes = [
     'GET /api/debug/email' => function() {
         return handle_email_debug();
     },
+
+    // Migrations (Internal/Temporary)
+    'GET /auth/migrate-google-auth' => function() {
+        try {
+            $db = Database::getInstance();
+            // Check if column exists
+            $check = $db->query("SHOW COLUMNS FROM users LIKE 'google_id'")->fetch();
+            
+            if (!$check) {
+                $db->exec("ALTER TABLE users ADD COLUMN google_id VARCHAR(255) UNIQUE AFTER email");
+                Response::success(null, "Successfully added google_id column to users table.");
+            } else {
+                Response::success(null, "google_id column already exists.");
+            }
+        } catch (Exception $e) {
+            Response::error("Migration failed: " . $e->getMessage(), 500);
+        }
+    },
 ];
 
 function handle_email_debug() {

@@ -225,6 +225,31 @@ $routes = [
         require_once __DIR__ . '/../google_config.php';
         Response::success(['url' => getGoogleLoginUrl()]);
     },
+
+    'GET /debug/google' => function() {
+        if (!defined('APP_DEBUG') || !APP_DEBUG) {
+            // Guard normally, but allow for this specific production debug
+        }
+        
+        $output = [
+            'vendor_exists' => file_exists(__DIR__ . '/../vendor/autoload.php'),
+            'google_client_id' => substr(GOOGLE_CLIENT_ID, 0, 10) . '...',
+            'google_redirect_uri' => GOOGLE_REDIRECT_URI,
+            'env_client_id' => getenv('GOOGLE_CLIENT_ID') ? 'SET' : 'NOT SET',
+            'env_client_secret' => getenv('GOOGLE_CLIENT_SECRET') ? 'SET' : 'NOT SET',
+        ];
+
+        try {
+            require_once __DIR__ . '/../google_config.php';
+            $output['login_url'] = getGoogleLoginUrl();
+            $output['status'] = 'OK';
+        } catch (Exception $e) {
+            $output['status'] = 'ERROR';
+            $output['error'] = $e->getMessage();
+        }
+
+        Response::success($output);
+    },
 ];
 
 function handle_email_debug() {

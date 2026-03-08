@@ -26,8 +26,16 @@ if (isset($_SESSION['user_id']) && !isset($_SESSION['role_id'])) {
 // Set charset to handle special characters
 $conn->set_charset("utf8mb4");
 
-// Start session
+// Start session with secure settings (Required for cross-site Vercel <-> Railway)
 if (session_status() === PHP_SESSION_NONE) {
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path'     => '/',
+        'domain'   => '', // Use current host
+        'secure'   => true,   // Required for SameSite=None
+        'httponly' => true,
+        'samesite' => 'None', // Required for cross-site
+    ]);
     session_start();
 }
 

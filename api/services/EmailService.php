@@ -7,6 +7,16 @@ if (!class_exists('PHPMailer\PHPMailer\PHPMailer')) {
         require_once __DIR__ . '/../vendor/autoload.php';
     } else {
         require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
+    public static function sendNotification(string $to, string $subject, string $message): bool {
+        $html = "
+            <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 12px;'>
+                <h2 style='color: #6366f1; margin-top: 0;'>Campus Dive Notification</h2>
+                <p style='font-size: 16px; color: #333; line-height: 1.6;'>{$message}</p>
+                <hr style='border: 0; border-top: 1px solid #eee; margin: 20px 0;'>
+                <p style='color: #999; font-size: 12px;'>This is an automated notification from Campus Dive. Please do not reply to this email.</p>
+            </div>
+        ";
+        return self::send($to, $subject, $html);
     }
 }
 

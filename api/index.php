@@ -220,11 +220,12 @@ $routes = [
         }
     },
 
-    // Google Auth API
     'GET /auth/google-url' => function() {
         require_once __DIR__ . '/../google_config.php';
         Response::success(['url' => getGoogleLoginUrl()]);
     },
+
+    'GET /auth/google-callback' => ['AuthController', 'googleCallback'],
 
     'GET /debug/google' => function() {
         if (!defined('APP_DEBUG') || !APP_DEBUG) {

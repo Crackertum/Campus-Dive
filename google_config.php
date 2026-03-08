@@ -4,8 +4,17 @@
 
 define('GOOGLE_CLIENT_ID', getenv('GOOGLE_CLIENT_ID') ?: '580964465243-6pduk4son190sfmn2fb3a7u34k1l4vlb.apps.googleusercontent.com');
 define('GOOGLE_CLIENT_SECRET', getenv('GOOGLE_CLIENT_SECRET') ?: 'your-google-client-secret');
-// Update this to match your actual domain in production
-define('GOOGLE_REDIRECT_URI', getenv('GOOGLE_REDIRECT_URI') ?: 'https://campus-dive-production.up.railway.app/google_callback.php');
+
+// Dynamic Redirect URI based on environment/host
+// Support for Railway/Vercel reverse proxies
+$protocol = 'http';
+if ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') || 
+    (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')) {
+    $protocol = 'https';
+}
+$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$defaultRedirect = $protocol . '://' . $host . '/google_callback.php';
+define('GOOGLE_REDIRECT_URI', getenv('GOOGLE_REDIRECT_URI') ?: $defaultRedirect);
 
 // Google API Client Library
 // Download from: https://github.com/googleapis/google-api-php-client
@@ -53,58 +62,80 @@ function handleGoogleCallback($code) {
     $lastname = $googleUser->getFamilyName();
     $googleId = $googleUser->getId();
 
-    // Check if user exists
-    $stmt = $conn->prepare("SELECT * FROM users WHERE email = ? OR google_id = ?");
-    $stmt->bind_param("ss", $email, $googleId);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    // Prefer API User model if available
+    if (class_exists('User')) {
+        $user = User::findByEmail($email);
+        if (!$user) {
+            // Check by Google ID too
+            $db = Database::getInstance();
+            $stmt = $db->prepare("SELECT * FROM users WHERE google_id = ?");
+            $stmt->execute([$googleId]);
+            $user = $stmt->fetch();
+        }
+    } else {
+        // Fallback to mysqli
+        $stmt = $conn->prepare("SELECT * FROM users WHERE email = ? OR google_id = ?");
+        $stmt->bind_param("ss", $email, $googleId);
+        $stmt->execute();
+        $user = $stmt->get_result()->fetch_assoc();
+    }
 
-    if ($result->num_rows > 0) {
-        // User exists - log them in
-        $user = $result->fetch_assoc();
-
-        // Update Google ID if not set
+    if ($user) {
+        // User exists - update Google ID if missing
         if (empty($user['google_id'])) {
-            $update = $conn->prepare("UPDATE users SET google_id = ? WHERE id = ?");
-            $update->bind_param("si", $googleId, $user['id']);
-            $update->execute();
+            if (class_exists('User')) {
+                User::update($user['id'], ['google_id' => $googleId]);
+            } else {
+                $update = $conn->prepare("UPDATE users SET google_id = ? WHERE id = ?");
+                $update->bind_param("si", $googleId, $user['id']);
+                $update->execute();
+            }
         }
 
-        // Set session
+        // Establish session
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['firstname'] = $user['firstname'];
         $_SESSION['lastname'] = $user['lastname'];
         $_SESSION['email'] = $user['email'];
-        $_SESSION['role'] = $user['role'];
-        $_SESSION['avatar'] = $user['avatar'];
-
+        $_SESSION['role'] = $user['role'] ?? 'user';
+        $_SESSION['role_id'] = $user['role_id'] ?? 4; // Fallback to student
+        
         return ['success' => true, 'user' => $user];
     } else {
-        // New user - create account
+        // New user creation
         $avatar = strtoupper(substr($firstname, 0, 1) . substr($lastname, 0, 1));
-        $randomPassword = password_hash(uniqid(), PASSWORD_DEFAULT);
-        $role = 'user'; // Default role for Google sign-ups
+        $role = 'user';
+        $role_id = defined('ROLE_STUDENT') ? ROLE_STUDENT : 4;
+        $status = 'pending';
+        $randomPassword = password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT);
 
-        $stmt = $conn->prepare("INSERT INTO users (firstname, lastname, email, google_id, password, role, avatar, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')");
-        $stmt->bind_param("sssssss", $firstname, $lastname, $email, $googleId, $randomPassword, $role, $avatar);
-
-        if ($stmt->execute()) {
+        if (class_exists('User')) {
+            // Using API model
+            $db = Database::getInstance();
+            $stmt = $db->prepare("INSERT INTO users (firstname, lastname, email, google_id, password, role, role_id, avatar, status, email_verified) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)");
+            $stmt->execute([$firstname, $lastname, $email, $googleId, $randomPassword, $role, $role_id, $avatar, $status]);
+            $userId = $db->lastInsertId();
+        } else {
+            // Fallback to mysqli
+            $stmt = $conn->prepare("INSERT INTO users (firstname, lastname, email, google_id, password, role, avatar, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')");
+            $stmt->bind_param("sssssss", $firstname, $lastname, $email, $googleId, $randomPassword, $role, $avatar);
+            $stmt->execute();
             $userId = $stmt->insert_id;
+        }
 
-            // Set session
+        if ($userId) {
             $_SESSION['user_id'] = $userId;
             $_SESSION['firstname'] = $firstname;
             $_SESSION['lastname'] = $lastname;
             $_SESSION['email'] = $email;
             $_SESSION['role'] = $role;
-            $_SESSION['avatar'] = $avatar;
+            $_SESSION['role_id'] = $role_id;
 
-            // Send welcome email (using existing update_status.php logic or similar)
-            if (function_exists('sendNotificationEmail')) {
-                // Fetch user data for the notification function
-                $user_query = $conn->query("SELECT * FROM users WHERE id = $userId");
-                $user_data = $user_query->fetch_assoc();
-                sendNotificationEmail($user_data, 'pending');
+            // Notifications/Emails
+            if (class_exists('EmailService')) {
+                try {
+                    EmailService::sendNotification($email, "Welcome to Campus Dive", "Your account has been created via Google Sign-in.");
+                } catch (\Exception $e) { /* ignore email failures */ }
             }
 
             return ['success' => true, 'new_user' => true];

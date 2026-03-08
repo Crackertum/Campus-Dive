@@ -211,4 +211,28 @@ class AuthController {
         session_destroy();
         Response::success(null, 'Logged out successfully.');
     }
+
+    /** GET /api/auth/google-callback */
+    public static function googleCallback(): void {
+        require_once __DIR__ . '/../../google_config.php';
+        
+        $code = $_GET['code'] ?? '';
+        if (!$code) {
+            Response::error('No code provided', 400);
+        }
+
+        $result = handleGoogleCallback($code);
+
+        if ($result['success']) {
+            $frontend_url = getenv('FRONTEND_URL') ?: 'https://campus-dive.vercel.app';
+            $params = isset($result['new_user']) ? '?welcome=true' : '';
+            header("Location: " . $frontend_url . "/dashboard" . $params);
+            exit;
+        } else {
+            // Redirect back to login with error
+            $frontend_url = getenv('FRONTEND_URL') ?: 'https://campus-dive.vercel.app';
+            header("Location: " . $frontend_url . "/login?error=" . urlencode($result['error']));
+            exit;
+        }
+    }
 }

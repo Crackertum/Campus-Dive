@@ -6,18 +6,15 @@ if (isset($_GET['code'])) {
     $result = handleGoogleCallback($_GET['code']);
 
     if ($result['success']) {
+        $frontend_url = getenv('FRONTEND_URL') ?: 'https://campus-dive.vercel.app';
+        
         if (isset($result['new_user'])) {
             // New user - redirect to complete profile
             $_SESSION['alert'] = ['message' => 'Welcome! Please complete your profile.', 'type' => 'success'];
-            redirect('user_dashboard.php?page=profile');
+            redirect($frontend_url . '/dashboard?welcome=true');
         } else {
             // Existing user
-            $user = $result['user'];
-            if ($user['role'] == 'admin') {
-                redirect('admin_dashboard.php');
-            } else {
-                redirect('user_dashboard.php');
-            }
+            redirect($frontend_url . '/dashboard');
         }
     } else {
         $_SESSION['alert'] = ['message' => 'Google login failed: ' . $result['error'], 'type' => 'error'];

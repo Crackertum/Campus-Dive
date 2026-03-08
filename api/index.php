@@ -214,6 +214,12 @@ $routes = [
             Response::error("Migration failed: " . $e->getMessage(), 500);
         }
     },
+
+    // Google Auth API
+    'GET /auth/google-url' => function() {
+        require_once __DIR__ . '/../google_config.php';
+        Response::success(['url' => getGoogleLoginUrl()]);
+    },
 ];
 
 function handle_email_debug() {

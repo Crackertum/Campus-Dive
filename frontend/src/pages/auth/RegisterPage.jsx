@@ -208,6 +208,30 @@ export default function RegisterPage() {
                                 <>Create Account <ArrowRight className="w-4 h-4" /></>
                             )}
                         </button>
+
+                        <div className="relative py-4 flex items-center gap-4">
+                            <div className="flex-1 h-px bg-surface-200 dark:bg-surface-800" />
+                            <span className="text-xs font-bold text-surface-400 uppercase tracking-widest">Or continue with</span>
+                            <div className="flex-1 h-px bg-surface-200 dark:bg-surface-800" />
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={async () => {
+                                try {
+                                    const res = await api.get('/auth/google-url');
+                                    if (res.data?.url) {
+                                        window.location.href = res.data.url;
+                                    }
+                                } catch (err) {
+                                    toast.error('Failed to initialize Google Login');
+                                }
+                            }}
+                            className="w-full py-3 px-4 rounded-2xl bg-white dark:bg-surface-800 border border-surface-200 dark:border-surface-700 hover:border-primary-500 dark:hover:border-primary-500 transition-all flex items-center justify-center gap-3 font-semibold shadow-sm"
+                        >
+                            <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5" />
+                            <span>Sign up with Google</span>
+                        </button>
                     </form>
 
                     <p className="mt-6 text-center text-sm text-surface-500 dark:text-surface-400">

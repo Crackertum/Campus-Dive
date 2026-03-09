@@ -7,6 +7,14 @@ if (!class_exists('PHPMailer\PHPMailer\PHPMailer')) {
         require_once __DIR__ . '/../vendor/autoload.php';
     } else {
         require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
+    }
+}
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+class EmailService {
+
     public static function sendNotification(string $to, string $subject, string $message): bool {
         $html = "
             <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 12px;'>
@@ -18,12 +26,6 @@ if (!class_exists('PHPMailer\PHPMailer\PHPMailer')) {
         ";
         return self::send($to, $subject, $html);
     }
-}
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
-class EmailService {
 
     public static function send(string $to, string $subject, string $htmlBody): bool {
         $apiKey = MAIL_PASSWORD;

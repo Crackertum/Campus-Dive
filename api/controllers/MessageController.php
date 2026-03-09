@@ -91,4 +91,18 @@ class MessageController {
         $count = Message::getUnreadCount($user['id']);
         Response::success(['count' => $count]);
     }
+
+    /** DELETE /api/messages/conversation/:userId */
+    public static function deleteConversation(int $otherUserId): void {
+        $user = AuthMiddleware::handle();
+        Message::deleteConversation($user['id'], $otherUserId);
+        Response::success(null, 'Conversation deleted.');
+    }
+
+    /** GET /api/messages/users — list of users available to message */
+    public static function getUsers(): void {
+        $user = AuthMiddleware::handle();
+        $users = Message::getUsers($user['id']);
+        Response::success($users);
+    }
 }

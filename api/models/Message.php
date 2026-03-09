@@ -78,4 +78,29 @@ class Message {
         $stmt->execute([$userId]);
         return $stmt->fetch()['c'];
     }
+
+    public static function deleteConversation(int $userId, int $otherUserId): bool {
+        $stmt = self::db()->prepare('
+            DELETE FROM messages
+            WHERE (sender_id = ? AND receiver_id = ?)
+               OR (sender_id = ? AND receiver_id = ?)
+        ');
+        $stmt->execute([$userId, $otherUserId, $otherUserId, $userId]);
+        return true;
+    }
+
+    /**
+     * Get all users except the given user (for new message modal).
+     * Returns id, firstname, lastname, email, role, avatar, avatar_image.
+     */
+    public static function getUsers(int $exceptUserId): array {
+        $stmt = self::db()->prepare('
+            SELECT id, firstname, lastname, email, role, avatar, avatar_image
+            FROM users
+            WHERE id != ? AND status != \'banned\'
+            ORDER BY firstname ASC
+        ');
+        $stmt->execute([$exceptUserId]);
+        return $stmt->fetchAll();
+    }
 }

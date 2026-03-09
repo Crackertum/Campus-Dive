@@ -6,7 +6,7 @@ import { useToast } from '../../context/ToastContext';
 import { UserAvatar } from '../../components/ui/StatusBadge';
 import { SkeletonCard } from '../../components/ui/Skeleton';
 import EmptyState from '../../components/ui/EmptyState';
-import { Send, Paperclip, Search, MessageSquare, CheckCheck, X, File, Plus, UserPlus, ArrowLeft } from 'lucide-react';
+import { Send, Paperclip, Search, MessageSquare, CheckCheck, X, File, Plus, UserPlus, ArrowLeft, Trash2 } from 'lucide-react';
 
 export default function MessagesPage() {
     const { user } = useAuth();
@@ -21,13 +21,13 @@ export default function MessagesPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [attachment, setAttachment] = useState(null);
     const [showNewMsgModal, setShowNewMsgModal] = useState(false);
-    const [allStudents, setAllStudents] = useState([]);
-    const [studentSearch, setStudentSearch] = useState('');
+    const [allUsers, setAllUsers] = useState([]);
+    const [userSearch, setUserSearch] = useState('');
+    const [deletingConv, setDeletingConv] = useState(false);
+    const [confirmDelete, setConfirmDelete] = useState(false);
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
     const location = useLocation();
-
-    const { isAdmin, isManager } = useAuth();
 
     useEffect(() => {
         loadConversations();
@@ -52,6 +52,7 @@ export default function MessagesPage() {
 
     const loadThread = async (userId) => {
         setActiveThread(userId);
+        setConfirmDelete(false);
         try {
             const res = await api.get(`/messages/thread/${userId}`);
             setMessages(res.data.messages);
@@ -62,17 +63,20 @@ export default function MessagesPage() {
         }
     };
 
-    const fetchStudents = async () => {
-        if (!isAdmin && !isManager) return;
+    // Fetch all users for new message modal (available to everyone)
+    const fetchUsers = async () => {
         try {
-            const res = await api.get('/admin/students?limit=100');
-            setAllStudents(res.data.data);
-        } catch (e) { }
+            const res = await api.get('/messages/users');
+            setAllUsers(res.data || []);
+        } catch (e) {
+            toast.error('Failed to load users');
+        }
     };
 
     useEffect(() => {
-        if (showNewMsgModal) fetchStudents();
+        if (showNewMsgModal) fetchUsers();
     }, [showNewMsgModal]);
+
     useEffect(() => {
         if (!activeThread) return;
         const interval = setInterval(() => loadThread(activeThread), 5000);
@@ -107,8 +111,36 @@ export default function MessagesPage() {
         }
     };
 
+    const handleDeleteConversation = async () => {
+        if (!activeThread) return;
+        if (!confirmDelete) {
+            setConfirmDelete(true);
+            return;
+        }
+        setDeletingConv(true);
+        try {
+            await api.delete(`/messages/conversation/${activeThread}`);
+            toast.success('Conversation deleted.');
+            setActiveThread(null);
+            setOtherUser(null);
+            setMessages([]);
+            setConfirmDelete(false);
+            loadConversations();
+        } catch (err) {
+            toast.error(err.message || 'Failed to delete conversation');
+        } finally {
+            setDeletingConv(false);
+        }
+    };
+
     const filtered = conversations.filter(c =>
         !searchTerm || `${c.firstname} ${c.lastname}`.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const filteredUsers = allUsers.filter(s =>
+        !userSearch ||
+        `${s.firstname} ${s.lastname}`.toLowerCase().includes(userSearch.toLowerCase()) ||
+        s.email.toLowerCase().includes(userSearch.toLowerCase())
     );
 
     if (loading) {
@@ -140,30 +172,27 @@ export default function MessagesPage() {
                                         placeholder="Search..."
                                     />
                                 </div>
-                                {(isAdmin || isManager) && (
-                                    <button
-                                        onClick={() => setShowNewMsgModal(true)}
-                                        className="btn-primary p-2 rounded-xl shrink-0"
-                                        title="New Message"
-                                    >
-                                        <Plus className="w-5 h-5" />
-                                    </button>
-                                )}
+                                {/* New Message button — visible to ALL users */}
+                                <button
+                                    onClick={() => setShowNewMsgModal(true)}
+                                    className="btn-primary p-2 rounded-xl shrink-0"
+                                    title="New Message"
+                                >
+                                    <Plus className="w-5 h-5" />
+                                </button>
                             </div>
                         </div>
                         <div className="flex-1 overflow-y-auto">
                             {filtered.length === 0 ? (
                                 <div className="p-8 text-center text-surface-400">
                                     <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                                    <p className="text-sm">No conversations</p>
-                                    {(isAdmin || isManager) && (
-                                        <button
-                                            onClick={() => setShowNewMsgModal(true)}
-                                            className="text-primary-500 font-semibold text-xs mt-4 hover:underline"
-                                        >
-                                            + Start a new chat
-                                        </button>
-                                    )}
+                                    <p className="text-sm">No conversations yet</p>
+                                    <button
+                                        onClick={() => setShowNewMsgModal(true)}
+                                        className="text-primary-500 font-semibold text-xs mt-4 hover:underline"
+                                    >
+                                        + Start a new chat
+                                    </button>
                                 </div>
                             ) : filtered.map(conv => (
                                 <button
@@ -199,19 +228,51 @@ export default function MessagesPage() {
                             <>
                                 {/* Chat Header */}
                                 <div className="flex items-center gap-3 p-4 border-b border-surface-100 dark:border-surface-800">
-                                    <button onClick={() => setActiveThread(null)} className="sm:hidden btn-icon w-8 h-8 flex items-center justify-center">
+                                    <button onClick={() => { setActiveThread(null); setConfirmDelete(false); }} className="sm:hidden btn-icon w-8 h-8 flex items-center justify-center">
                                         <ArrowLeft className="w-4 h-4" />
                                     </button>
                                     <UserAvatar user={otherUser} size="sm" />
-                                    <div>
+                                    <div className="flex-1">
                                         <p className="font-medium text-sm">{otherUser.firstname} {otherUser.lastname}</p>
                                         <p className="text-xs text-surface-500">{otherUser.role_name || otherUser.role}</p>
                                     </div>
+                                    {/* Delete Conversation */}
+                                    {confirmDelete ? (
+                                        <div className="flex items-center gap-2 animate-fade-in">
+                                            <span className="text-xs text-red-500 font-medium">Delete conversation?</span>
+                                            <button
+                                                onClick={handleDeleteConversation}
+                                                disabled={deletingConv}
+                                                className="text-xs px-3 py-1.5 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors font-semibold disabled:opacity-50"
+                                            >
+                                                {deletingConv ? 'Deleting…' : 'Yes, Delete'}
+                                            </button>
+                                            <button
+                                                onClick={() => setConfirmDelete(false)}
+                                                className="text-xs px-3 py-1.5 rounded-lg bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors"
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <button
+                                            onClick={() => setConfirmDelete(true)}
+                                            className="btn-icon w-9 h-9 text-surface-400 hover:text-red-500 transition-colors"
+                                            title="Delete conversation"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    )}
                                 </div>
 
                                 {/* Messages */}
                                 <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                                    {messages.map(msg => {
+                                    {messages.length === 0 ? (
+                                        <div className="flex flex-col items-center justify-center h-full text-surface-400">
+                                            <MessageSquare className="w-10 h-10 mb-3 opacity-30" />
+                                            <p className="text-sm">No messages yet — say hello!</p>
+                                        </div>
+                                    ) : messages.map(msg => {
                                         const isMine = msg.sender_id == user.id;
                                         return (
                                             <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
@@ -287,14 +348,22 @@ export default function MessagesPage() {
                             <EmptyState
                                 icon={MessageSquare}
                                 title="Select a conversation"
-                                description="Choose a conversation from the list to start chatting."
+                                description="Choose a conversation from the list or start a new one."
+                                action={
+                                    <button
+                                        onClick={() => setShowNewMsgModal(true)}
+                                        className="btn-primary mt-4 flex items-center gap-2"
+                                    >
+                                        <Plus className="w-4 h-4" /> New Message
+                                    </button>
+                                }
                             />
                         )}
                     </div>
                 </div>
             </div>
 
-            {/* New Message Modal */}
+            {/* New Message Modal — available to ALL users */}
             {showNewMsgModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowNewMsgModal(false)} />
@@ -313,46 +382,42 @@ export default function MessagesPage() {
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" />
                                 <input
                                     type="text"
-                                    value={studentSearch}
-                                    onChange={e => setStudentSearch(e.target.value)}
+                                    value={userSearch}
+                                    onChange={e => setUserSearch(e.target.value)}
                                     className="input-field pl-10 text-sm"
-                                    placeholder="Search students by name or email..."
+                                    placeholder="Search by name or email..."
                                     autoFocus
                                 />
                             </div>
                         </div>
                         <div className="max-h-80 overflow-y-auto">
-                            {allStudents.filter(s =>
-                                !studentSearch ||
-                                `${s.firstname} ${s.lastname}`.toLowerCase().includes(studentSearch.toLowerCase()) ||
-                                s.email.toLowerCase().includes(studentSearch.toLowerCase())
-                            ).length === 0 ? (
+                            {filteredUsers.length === 0 ? (
                                 <div className="p-8 text-center text-surface-400 text-sm">
-                                    No students found.
+                                    {allUsers.length === 0 ? 'Loading users…' : 'No users found.'}
                                 </div>
-                            ) : allStudents
-                                .filter(s =>
-                                    !studentSearch ||
-                                    `${s.firstname} ${s.lastname}`.toLowerCase().includes(studentSearch.toLowerCase()) ||
-                                    s.email.toLowerCase().includes(studentSearch.toLowerCase())
-                                )
-                                .map(s => (
-                                    <button
-                                        key={s.id}
-                                        onClick={() => {
-                                            loadThread(s.id);
-                                            setShowNewMsgModal(false);
-                                            setStudentSearch('');
-                                        }}
-                                        className="w-full flex items-center gap-3 p-4 text-left hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors border-b border-surface-50 dark:border-surface-800/50"
-                                    >
-                                        <UserAvatar user={s} size="sm" />
-                                        <div className="min-w-0">
-                                            <p className="text-sm font-semibold truncate">{s.firstname} {s.lastname}</p>
-                                            <p className="text-xs text-surface-500 truncate">{s.email}</p>
-                                        </div>
-                                    </button>
-                                ))}
+                            ) : filteredUsers.map(u => (
+                                <button
+                                    key={u.id}
+                                    onClick={() => {
+                                        loadThread(u.id);
+                                        setShowNewMsgModal(false);
+                                        setUserSearch('');
+                                    }}
+                                    className="w-full flex items-center gap-3 p-4 text-left hover:bg-surface-50 dark:hover:bg-surface-800 transition-colors border-b border-surface-50 dark:border-surface-800/50"
+                                >
+                                    <UserAvatar user={u} size="sm" />
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-sm font-semibold truncate">{u.firstname} {u.lastname}</p>
+                                        <p className="text-xs text-surface-500 truncate">{u.email}</p>
+                                    </div>
+                                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${u.role === 'admin' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                            : u.role === 'manager' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                                : 'bg-surface-100 text-surface-600 dark:bg-surface-800 dark:text-surface-400'
+                                        }`}>
+                                        {u.role}
+                                    </span>
+                                </button>
+                            ))}
                         </div>
                     </div>
                 </div>

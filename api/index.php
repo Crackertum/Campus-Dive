@@ -168,6 +168,7 @@ $routes = [
     'GET  /messages/conversations'  => ['MessageController', 'conversations'],
     'POST /messages'                => ['MessageController', 'send'],
     'GET  /messages/unread-count'   => ['MessageController', 'unreadCount'],
+    'GET  /messages/users'          => ['MessageController', 'getUsers'],
 
     // Notifications
     'GET  /notifications'           => ['NotificationController', 'index'],
@@ -221,9 +222,19 @@ $routes = [
     },
 
     'GET /auth/google-url' => function() {
-        $googleConfigPath = file_exists(__DIR__ . '/../google_config.php') ? __DIR__ . '/../google_config.php' : __DIR__ . '/google_config.php';
-        require_once $googleConfigPath;
-        Response::success(['url' => getGoogleLoginUrl()]);
+        try {
+            $googleConfigPath = file_exists(__DIR__ . '/../google_config.php') ? __DIR__ . '/../google_config.php' : __DIR__ . '/google_config.php';
+            require_once $googleConfigPath;
+            // Guard against placeholder secret
+            if (!defined('GOOGLE_CLIENT_SECRET') || GOOGLE_CLIENT_SECRET === 'your-google-client-secret' || empty(GOOGLE_CLIENT_SECRET)) {
+                Response::error('Google OAuth is not configured on this server.', 503);
+            }
+            $url = getGoogleLoginUrl();
+            Response::success(['url' => $url]);
+        } catch (\Exception $e) {
+            error_log('Google URL Error: ' . $e->getMessage());
+            Response::error('Google Login is currently unavailable. Please try again later.', 503);
+        }
     },
 
     'GET /auth/google-callback' => ['AuthController', 'googleCallback'],
@@ -316,13 +327,14 @@ function handle_db_debug() {
 
 // Parameterized routes (with :id)
 $paramRoutes = [
-    'DELETE /student/documents/:id'     => ['StudentController', 'deleteDocument'],
-    'GET    /admin/students/:id'        => ['AdminController', 'studentDetail'],
-    'PUT    /admin/students/:id/status' => ['AdminController', 'updateStudentStatus'],
-    'PUT    /admin/roles/:id'           => ['AdminController', 'updateRole'],
-    'GET    /messages/thread/:id'       => ['MessageController', 'thread'],
-    'PUT    /messages/:id/read'         => ['MessageController', 'markRead'],
-    'PUT    /notifications/:id/read'    => ['NotificationController', 'markRead'],
+    'DELETE /student/documents/:id'          => ['StudentController', 'deleteDocument'],
+    'GET    /admin/students/:id'             => ['AdminController', 'studentDetail'],
+    'PUT    /admin/students/:id/status'      => ['AdminController', 'updateStudentStatus'],
+    'PUT    /admin/roles/:id'                => ['AdminController', 'updateRole'],
+    'GET    /messages/thread/:id'            => ['MessageController', 'thread'],
+    'PUT    /messages/:id/read'              => ['MessageController', 'markRead'],
+    'DELETE /messages/conversation/:id'      => ['MessageController', 'deleteConversation'],
+    'PUT    /notifications/:id/read'         => ['NotificationController', 'markRead'],
 ];
 
 // ────────────────────────────────────────────

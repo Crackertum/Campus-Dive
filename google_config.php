@@ -2,8 +2,8 @@
 // Google OAuth Configuration
 // Get credentials from: https://console.cloud.google.com/apis/credentials
 
-define('GOOGLE_CLIENT_ID', getenv('GOOGLE_CLIENT_ID') ?: '580964465243-6pduk4son190sfmn2fb3a7u34k1l4vlb.apps.googleusercontent.com');
-define('GOOGLE_CLIENT_SECRET', getenv('GOOGLE_CLIENT_SECRET') ?: 'your-google-client-secret');
+define('GOOGLE_CLIENT_ID', getenv('GOOGLE_CLIENT_ID') ?: '');
+define('GOOGLE_CLIENT_SECRET', getenv('GOOGLE_CLIENT_SECRET') ?: '');
 
 // Dynamic Redirect URI based on environment/host
 // Support for Railway/Vercel reverse proxies

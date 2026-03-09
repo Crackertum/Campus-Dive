@@ -213,7 +213,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'send_message') {
                 <?php endif; ?>
 
                 <!-- MESSAGES VIEW -->
-                <?php if ($page == 'messages'): include 'admin_messages_partial.php'; endif; // Reuse or implement inline ?>
+                <?php if ($page == 'messages'): include 'user_messages_partial.php'; endif; ?>
                 
                 <!-- DOCUMENTS VIEW -->
                 <?php if ($page == 'documents'): ?>

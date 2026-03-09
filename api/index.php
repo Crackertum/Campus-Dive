@@ -245,8 +245,21 @@ $routes = [
 
     'GET /auth/google-url' => function() {
         try {
-            $googleConfigPath = file_exists(__DIR__ . '/../google_config.php') ? __DIR__ . '/../google_config.php' : __DIR__ . '/google_config.php';
+            // Standardize path - look in root first, then api dir
+            $rootPath = dirname(__DIR__);
+            $googleConfigPath = $rootPath . '/google_config.php';
+            
+            if (!file_exists($googleConfigPath)) {
+                $googleConfigPath = __DIR__ . '/google_config.php';
+            }
+            
+            if (!file_exists($googleConfigPath)) {
+                error_log("Google Config Error: File not found at $googleConfigPath or root.");
+                Response::error('Google Auth configuration file is missing.', 500);
+            }
+
             require_once $googleConfigPath;
+            
             // Guard against placeholder secret
             if (!defined('GOOGLE_CLIENT_SECRET') || GOOGLE_CLIENT_SECRET === 'your-google-client-secret' || empty(GOOGLE_CLIENT_SECRET)) {
                 Response::error('Google OAuth is not configured on this server.', 503);
@@ -255,7 +268,7 @@ $routes = [
             Response::success(['url' => $url]);
         } catch (\Exception $e) {
             error_log('Google URL Error: ' . $e->getMessage());
-            Response::error('Google Login is currently unavailable. Please try again later.', 503);
+            Response::error('Google Login is currently unavailable: ' . $e->getMessage(), 503);
         }
     },
 

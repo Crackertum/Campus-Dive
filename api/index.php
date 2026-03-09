@@ -165,10 +165,16 @@ $routes = [
         Response::success(['csrf_token' => CsrfMiddleware::getToken()]);
     },
     'GET /ping'   => function() { 
+        $rootPath = dirname(__DIR__);
         Response::success([
             'pong' => true, 
+            'current_dir' => __DIR__,
+            'root_path' => $rootPath,
+            'root_exists' => is_dir($rootPath),
+            'google_config_in_root' => file_exists($rootPath . '/google_config.php'),
+            'google_config_in_api' => file_exists(__DIR__ . '/google_config.php'),
             'google_id_set' => !empty(getenv('GOOGLE_CLIENT_ID')),
-            'env_id' => getenv('GOOGLE_CLIENT_ID')
+            'script_filename' => $_SERVER['SCRIPT_FILENAME'] ?? 'N/A'
         ]); 
     },
 

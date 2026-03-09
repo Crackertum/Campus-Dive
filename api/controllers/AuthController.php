@@ -214,7 +214,8 @@ class AuthController {
 
     /** GET /api/auth/google-callback */
     public static function googleCallback(): void {
-        require_once __DIR__ . '/../../google_config.php';
+        $googleConfigPath = file_exists(__DIR__ . '/../../google_config.php') ? __DIR__ . '/../../google_config.php' : dirname(__DIR__) . '/google_config.php';
+        require_once $googleConfigPath;
         
         $code = $_GET['code'] ?? '';
         if (!$code) {

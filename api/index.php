@@ -221,7 +221,8 @@ $routes = [
     },
 
     'GET /auth/google-url' => function() {
-        require_once __DIR__ . '/../google_config.php';
+        $googleConfigPath = file_exists(__DIR__ . '/../google_config.php') ? __DIR__ . '/../google_config.php' : __DIR__ . '/google_config.php';
+        require_once $googleConfigPath;
         Response::success(['url' => getGoogleLoginUrl()]);
     },
 
@@ -241,7 +242,8 @@ $routes = [
         ];
 
         try {
-            require_once __DIR__ . '/../google_config.php';
+            $googleConfigPath = file_exists(__DIR__ . '/../google_config.php') ? __DIR__ . '/../google_config.php' : __DIR__ . '/google_config.php';
+            require_once $googleConfigPath;
             $output['login_url'] = getGoogleLoginUrl();
             $output['status'] = 'OK';
         } catch (Exception $e) {

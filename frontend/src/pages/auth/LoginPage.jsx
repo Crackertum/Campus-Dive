@@ -183,7 +183,7 @@ export default function LoginPage() {
                                         window.location.href = res.data.url;
                                     }
                                 } catch (err) {
-                                    toast.error('Failed to initialize Google Login');
+                                    toast.error(err.message || 'Failed to initialize Google Login');
                                 }
                             }}
                             className="w-full py-3 px-4 rounded-2xl bg-white dark:bg-surface-800 border border-surface-200 dark:border-surface-700 hover:border-primary-500 dark:hover:border-primary-500 transition-all flex items-center justify-center gap-3 font-semibold shadow-sm"

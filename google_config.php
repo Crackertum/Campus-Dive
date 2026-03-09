@@ -144,4 +144,3 @@ function handleGoogleCallback($code) {
 
     return ['success' => false, 'error' => 'Failed to process Google login'];
 }
-?>

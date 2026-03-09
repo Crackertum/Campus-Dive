@@ -1,6 +1,21 @@
 <?php
 ob_start(); // ← OUTPUT BUFFERING - MUST BE FIRST LINE
 
+// Load local .env file if it exists (for local development)
+if (file_exists(__DIR__ . '/../.env')) {
+    $lines = file(__DIR__ . '/../.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        $line = trim($line);
+        if (empty($line) || strpos($line, '#') === 0 || strpos($line, '=') === false) continue;
+        list($name, $value) = explode('=', $line, 2);
+        $name = trim($name);
+        $value = trim($value);
+        putenv("$name=$value");
+        $_ENV[$name] = $value;
+        $_SERVER[$name] = $value;
+    }
+}
+
 // 1. Error handling & Shutdown (Register as early as possible)
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
@@ -148,6 +163,13 @@ $routes = [
     'GET  /auth/csrf'            => function() {
         if (session_status() === PHP_SESSION_NONE) session_start();
         Response::success(['csrf_token' => CsrfMiddleware::getToken()]);
+    },
+    'GET /ping'   => function() { 
+        Response::success([
+            'pong' => true, 
+            'google_id_set' => !empty(getenv('GOOGLE_CLIENT_ID')),
+            'env_id' => getenv('GOOGLE_CLIENT_ID')
+        ]); 
     },
 
     // Student

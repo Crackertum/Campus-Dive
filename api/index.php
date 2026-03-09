@@ -266,7 +266,7 @@ $routes = [
             }
             $url = getGoogleLoginUrl();
             Response::success(['url' => $url]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log('Google URL Error: ' . $e->getMessage());
             Response::error('Google Login is currently unavailable: ' . $e->getMessage(), 503);
         }

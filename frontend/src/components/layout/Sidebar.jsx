@@ -4,7 +4,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { UserAvatar } from '../ui/StatusBadge';
 import {
     LayoutDashboard, Users, MessageSquare, FileText, Settings,
-    LogOut, Shield, BarChart3, Moon, Sun, Menu, X, ChevronDown
+    LogOut, Shield, BarChart3, Moon, Sun, Menu, X, ChevronDown, Users2
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -24,6 +24,7 @@ export default function Sidebar() {
         { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { to: '/documents', icon: FileText, label: 'Documents' },
         { to: '/messages', icon: MessageSquare, label: 'Messages' },
+        { to: '/social', icon: Users2, label: 'Social Hub' },
         { to: '/settings', icon: Settings, label: 'Settings' },
     ];
 

@@ -15,6 +15,12 @@ import AnalyticsPage from './pages/admin/AnalyticsPage';
 import MessagesPage from './pages/messages/MessagesPage';
 import DocumentsPage from './pages/student/DocumentsPage';
 import SettingsPage from './pages/student/SettingsPage';
+import SocialLayout from './components/layout/SocialLayout';
+import SocialFeedPage from './pages/social/SocialFeedPage';
+import GroupsPage from './pages/social/GroupsPage';
+import GroupProfilePage from './pages/social/GroupProfilePage';
+import SinglePostPage from './pages/social/SinglePostPage';
+import SocialProfilePage from './pages/social/SocialProfilePage';
 
 // Public Pages
 import HomePage from './pages/public/HomePage';
@@ -110,6 +116,40 @@ export default function App() {
             <SettingsPage />
           </RouteGuard>
         } />
+
+        {/* Social Hub Routes */}
+        <Route path="/social" element={<SocialLayout />}>
+          <Route index element={
+            <RouteGuard roles={['user', 'Student']}>
+              <SocialFeedPage />
+            </RouteGuard>
+          } />
+          <Route path="groups" element={
+            <RouteGuard roles={['user', 'Student']}>
+              <GroupsPage />
+            </RouteGuard>
+          } />
+          <Route path="groups/:id" element={
+            <RouteGuard roles={['user', 'Student']}>
+              <GroupProfilePage />
+            </RouteGuard>
+          } />
+          <Route path="posts/:id" element={
+            <RouteGuard roles={['user', 'Student']}>
+              <SinglePostPage />
+            </RouteGuard>
+          } />
+          <Route path="profile" element={
+            <RouteGuard roles={['user', 'Student']}>
+              <SocialProfilePage />
+            </RouteGuard>
+          } />
+          <Route path="profile/:id" element={
+            <RouteGuard roles={['user', 'Student']}>
+              <SocialProfilePage />
+            </RouteGuard>
+          } />
+        </Route>
 
       </Route>
 

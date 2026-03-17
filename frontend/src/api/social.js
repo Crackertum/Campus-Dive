@@ -35,7 +35,7 @@ export const socialApi = {
     getAdminGroups: () => api.get('/social/admin/groups'),
     createGroup: (data) => api.post('/social/admin/groups', data),
     deleteGroup: (groupId) => api.delete(`/social/admin/groups?group_id=${groupId}`),
-    assignManager: (groupId, userId) => api.post('/social/admin/assign-manager', { group_id: groupId, user_id: userId }),
+    assignManager: (groupId, userId) => api.post('/social/admin/assign-manager', { group_id: groupId, manager_id: userId }),
     searchUsers: (query) => api.get(`/admin/users?search=${encodeURIComponent(query)}`),
 };
 

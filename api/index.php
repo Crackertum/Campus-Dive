@@ -237,6 +237,12 @@ $routes = [
     'GET /api/debug/db' => function() {
         return handle_db_debug();
     },
+    'GET /api/ping' => function() {
+        Response::success(['pong' => true]);
+    },
+    'GET /ping2' => function() {
+        Response::success(['pong2' => true]);
+    },
     'GET /debug/email' => function() {
         return handle_email_debug();
     },

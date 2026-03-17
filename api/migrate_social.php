@@ -28,6 +28,7 @@ try {
         cover_color_end VARCHAR(30) DEFAULT '#8b5cf6',
         icon_initials VARCHAR(5),
         icon_bg_color VARCHAR(30) DEFAULT '#6366f1',
+        avatar_url VARCHAR(2048) DEFAULT NULL,
         banner_url VARCHAR(2048) DEFAULT NULL,
         is_private TINYINT(1) DEFAULT 0,
         allow_member_posts TINYINT(1) DEFAULT 1,
@@ -134,7 +135,19 @@ try {
         // Likely column already exists
     }
 
-    // 9. Insert Roles
+    // 9. Add avatar_url to social_groups if missing
+    try {
+        $db->exec("ALTER TABLE social_groups ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(2048) DEFAULT NULL AFTER icon_bg_color");
+    } catch (Exception $e) {
+        // Fallback for older MySQL versions that don't support ADD COLUMN IF NOT EXISTS
+        try {
+            $db->exec("ALTER TABLE social_groups ADD COLUMN avatar_url VARCHAR(2048) DEFAULT NULL AFTER icon_bg_color");
+        } catch (Exception $e2) {
+            // Already exists or other error
+        }
+    }
+
+    // 10. Insert Roles
     $db->exec("INSERT IGNORE INTO roles (name, description) VALUES ('GroupManager', 'Manages a specific student community group')");
 
     // 10. Insert Permissions

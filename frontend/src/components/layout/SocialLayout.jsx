@@ -1,9 +1,11 @@
-import { useState } from 'react';
-import { Outlet, NavLink, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Outlet, NavLink, Link, useLocation } from 'react-router-dom';
 import { 
     Home, Users, User, Settings, Bell, Plus, Search, 
-    Moon, Sun, ChevronDown, LogOut, ExternalLink, MessageSquare, LayoutDashboard
+    Moon, Sun, ChevronDown, LogOut, ExternalLink, MessageSquare, LayoutDashboard,
+    ShieldCheck, ChevronRight
 } from 'lucide-react';
+import { socialApi } from '../../api/social';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { UserAvatar } from '../ui/StatusBadge';
@@ -12,12 +14,26 @@ import AnnouncementsWidget from '../social/AnnouncementsWidget';
 import NotificationDropdown from '../social/NotificationDropdown';
 import CreatePostModal from '../social/CreatePostModal';
 
-export default function SocialLayout() {
+    const location = useLocation();
     const { user, logout } = useAuth();
     const { dark, toggle } = useTheme();
     const [showNotifications, setShowNotifications] = useState(false);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
+    const [managedHubs, setManagedHubs] = useState([]);
+
+    useEffect(() => {
+        fetchManagedHubs();
+    }, []);
+
+    const fetchManagedHubs = async () => {
+        try {
+            const res = await socialApi.getGroups();
+            setManagedHubs(res.data.filter(g => g.user_role === 'manager' || g.user_role === 'admin'));
+        } catch (err) {
+            console.error('Failed to fetch managed hubs:', err);
+        }
+    };
 
     const navItems = [
         { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -150,6 +166,31 @@ export default function SocialLayout() {
                                 ))}
                             </nav>
                         </section>
+
+                        {managedHubs.length > 0 && (
+                            <section>
+                                <h3 className="text-[10px] font-black tracking-[0.2em] text-slate-400 uppercase mb-4 px-4">Managed Hubs</h3>
+                                <nav className="space-y-1">
+                                    {managedHubs.map(hub => (
+                                        <Link
+                                            key={hub.id}
+                                            to={`/social/manager/${hub.slug}`}
+                                            className="flex items-center gap-3 px-4 py-3 rounded-2xl text-[11px] font-black uppercase tracking-tight text-slate-500 hover:text-primary-500 hover:bg-white dark:hover:bg-white/5 transition-all group"
+                                        >
+                                            <div className="w-8 h-8 rounded-lg bg-primary-500/10 flex items-center justify-center text-primary-500 group-hover:bg-primary-500 group-hover:text-white transition-all overflow-hidden">
+                                                {hub.avatar_url ? (
+                                                    <img src={hub.avatar_url} alt="" className="w-full h-full object-cover" />
+                                                ) : (
+                                                    hub.icon_initials || hub.name[0]
+                                                )}
+                                            </div>
+                                            <span className="flex-1 truncate">{hub.name}</span>
+                                            <ChevronRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        </Link>
+                                    ))}
+                                </nav>
+                            </section>
+                        )}
 
                         <section>
                             <h3 className="text-[10px] font-black tracking-[0.2em] text-slate-400 uppercase mb-4 px-4">Quick Links</h3>

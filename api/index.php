@@ -164,16 +164,6 @@ if (defined('APP_DEBUG') && APP_DEBUG) {
 // ────────────────────────────────────────────
 
 $routes = [
-    'GET /api/ping' => function() {
-        Response::success(['pong' => true]);
-    },
-    'GET /ping2' => function() {
-        Response::success(['pong2' => true]);
-    },
-    'GET /inspect-db' => function() {
-        require_once __DIR__ . '/inspect_db.php';
-    },
-
     // Auth (public)
     'POST /auth/login'           => ['AuthController', 'login'],
     'POST /auth/register'        => ['AuthController', 'register'],

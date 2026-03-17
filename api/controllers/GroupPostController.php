@@ -58,7 +58,8 @@ class GroupPostController {
     /**
      * Get a single post detail
      */
-    public static function show(int $id): void {
+    public static function show(): void {
+        $id = (int)($_GET['id'] ?? 0);
         $user = AuthMiddleware::handle();
         $db = Database::getInstance();
 
@@ -183,7 +184,7 @@ class GroupPostController {
         $stmt = $db->prepare("INSERT INTO post_comments (post_id, user_id, content, parent_id) VALUES (?, ?, ?, ?)");
         $stmt->execute([$postId, $user['id'], $content, $parentId]);
 
-        // Update comment count
+        // Update comment count denormalized
         $db->prepare("UPDATE group_posts SET comment_count = (SELECT COUNT(*) FROM post_comments WHERE post_id = ?) WHERE id = ?")
            ->execute([$postId, $postId]);
 

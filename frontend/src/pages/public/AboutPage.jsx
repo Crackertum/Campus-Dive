@@ -1,6 +1,9 @@
-import { Award, Target, Eye, Shield, Users, Globe, BookOpen, Lightbulb } from 'lucide-react';
+import { useState } from 'react';
+import { Award, Target, Eye, Shield, Users, Globe, BookOpen, Lightbulb, ChevronRight, X } from 'lucide-react';
 
 export default function AboutPage() {
+    const [showFounders, setShowFounders] = useState(false);
+
     return (
         <div className="space-y-24 pb-20">
             {/* Header */}
@@ -99,7 +102,7 @@ export default function AboutPage() {
                         <ul className="space-y-4 font-bold text-surface-700 dark:text-white">
                             <li className="flex items-center gap-3">
                                 <div className="w-2 h-2 rounded-full bg-primary-500" />
-                                <span>Centering student developers in the sosial pillar</span>
+                                <span>Centering student developers in the social pillar</span>
                             </li>
                             <li className="flex items-center gap-3">
                                 <div className="w-2 h-2 rounded-full bg-primary-500" />
@@ -110,6 +113,87 @@ export default function AboutPage() {
                                 <span>Fostering Mutually beneficial partnerships</span>
                             </li>
                         </ul>
+                    </div>
+                </div>
+            </section>
+
+            {/* History Section */}
+            <section className="bg-surface-50 dark:bg-surface-900/50 py-24 border-t border-surface-200 dark:border-white/10">
+                <div className="max-w-7xl mx-auto px-4">
+                    <div className="text-center mb-16">
+                        <h2 className="text-4xl font-black tracking-tight mb-4">Our History</h2>
+                    </div>
+                    
+                    <div className="max-w-3xl mx-auto">
+                        <div className="relative pl-8 border-l-2 border-primary-500 pb-12">
+                            <div className="absolute top-0 -left-[9px] w-4 h-4 rounded-full bg-primary-500 border-4 border-surface-50 dark:border-surface-900" />
+                            <div className="inline-block px-3 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 font-bold text-sm rounded-full mb-4">
+                                2025
+                            </div>
+                            <p className="text-lg text-surface-600 dark:text-surface-400 font-medium leading-relaxed">
+                                Campus Dive was founded by a group of passionate tech students from the <strong className="text-surface-900 dark:text-white">Technical University of Mombasa Innovation HUB</strong> and student developers from the <strong className="text-surface-900 dark:text-white">BBIT Management Science Department</strong>.
+                            </p>
+                        </div>
+                        
+                        <div className="mt-8">
+                            <button 
+                                onClick={() => setShowFounders(!showFounders)}
+                                className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-lg transition-colors"
+                            >
+                                <span>{showFounders ? "Hide Founders" : "View Founders"}</span>
+                                {showFounders ? <X className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                            </button>
+                            
+                            {showFounders && (
+                                <div className="mt-8 p-8 bg-white dark:bg-surface-800 rounded-2xl border border-surface-200 dark:border-surface-700 shadow-sm animate-in fade-in slide-in-from-top-4 duration-300">
+                                    <h3 className="text-2xl font-bold mb-8 text-center text-surface-900 dark:text-white">Campus Dive Group</h3>
+                                    
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+                                        <div className="text-center group">
+                                            <div className="aspect-square w-full max-w-[200px] mx-auto mb-4 overflow-hidden rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 flex items-center justify-center relative">
+                                                <img 
+                                                    src="/image1.jpeg" 
+                                                    alt="Founder 1 - TUM Innovation HUB co-founder"
+                                                    className="w-full h-full object-cover transition-transform group-hover:scale-105 z-10 relative bg-surface-100"
+                                                    onError={(e) => { e.target.style.display = 'none'; }}
+                                                />
+                                                <div className="absolute inset-0 flex items-center justify-center text-surface-400 font-medium text-sm">Founder 1</div>
+                                            </div>
+                                            <p className="font-bold text-surface-900 dark:text-white">Founder Name</p>
+                                            <p className="text-sm text-surface-500 font-medium">TUM Innovation HUB</p>
+                                        </div>
+                                        
+                                        <div className="text-center group">
+                                            <div className="aspect-square w-full max-w-[200px] mx-auto mb-4 overflow-hidden rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 flex items-center justify-center relative">
+                                                <img 
+                                                    src="/campus_dive_logo.png" 
+                                                    alt="Founder 2 - BBIT Management Science co-founder"
+                                                    className="w-full h-full object-cover transition-transform group-hover:scale-105 z-10 relative bg-surface-100"
+                                                    onError={(e) => { e.target.style.display = 'none'; }}
+                                                />
+                                                <div className="absolute inset-0 flex items-center justify-center text-surface-400 font-medium text-sm">Founder 2</div>
+                                            </div>
+                                            <p className="font-bold text-surface-900 dark:text-white">Founder Name</p>
+                                            <p className="text-sm text-surface-500 font-medium">BBIT Dept.</p>
+                                        </div>
+                                        
+                                        <div className="text-center group">
+                                            <div className="aspect-square w-full max-w-[200px] mx-auto mb-4 overflow-hidden rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 flex items-center justify-center relative">
+                                                <img 
+                                                    src="/founder3.jpg" 
+                                                    alt="Founder 3 - Student developer co-founder"
+                                                    className="w-full h-full object-cover transition-transform group-hover:scale-105 z-10 relative bg-surface-100"
+                                                    onError={(e) => { e.target.style.display = 'none'; }}
+                                                />
+                                                <div className="absolute inset-0 flex items-center justify-center text-surface-400 font-medium text-sm">Founder 3</div>
+                                            </div>
+                                            <p className="font-bold text-surface-900 dark:text-white">Founder Name</p>
+                                            <p className="text-sm text-surface-500 font-medium">Student Developer</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </section>

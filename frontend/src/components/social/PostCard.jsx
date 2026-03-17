@@ -1,8 +1,4 @@
 import { useState } from 'react';
-import { Heart, MessageSquare, Share2, MoreHorizontal, Link as LinkIcon } from 'lucide-react';
-import { Link } from 'react-router-dom';
-
-import { useState } from 'react';
 import { Heart, MessageSquare, Share2, MoreHorizontal, Link as LinkIcon, Play, Image as ImageIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { socialApi } from '../../api/social';

@@ -251,17 +251,24 @@ $routes = [
 
     'GET /auth/google-url' => function() {
         try {
-            // Standardize path - look in root first, then api dir
             $rootPath = dirname(__DIR__);
-            $googleConfigPath = $rootPath . '/google_config.php';
+            $possiblePaths = [
+                $rootPath . DIRECTORY_SEPARATOR . 'google_config.php',
+                __DIR__ . DIRECTORY_SEPARATOR . 'google_config.php'
+            ];
             
-            if (!file_exists($googleConfigPath)) {
-                $googleConfigPath = __DIR__ . '/google_config.php';
+            $googleConfigPath = null;
+            foreach ($possiblePaths as $p) {
+                if (file_exists($p)) {
+                    $googleConfigPath = $p;
+                    break;
+                }
             }
             
-            if (!file_exists($googleConfigPath)) {
-                error_log("Google Config Error: File not found at $googleConfigPath or root.");
-                Response::error('Google Auth configuration file is missing.', 500);
+            if (!$googleConfigPath) {
+                $checked = implode(', ', $possiblePaths);
+                error_log("Google Config Error: File not found at checked paths: $checked");
+                Response::error("Google Auth configuration file is missing. Checked: $checked", 500);
             }
 
             require_once $googleConfigPath;

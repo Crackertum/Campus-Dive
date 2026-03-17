@@ -164,6 +164,16 @@ if (defined('APP_DEBUG') && APP_DEBUG) {
 // ────────────────────────────────────────────
 
 $routes = [
+    'GET /api/ping' => function() {
+        Response::success(['pong' => true]);
+    },
+    'GET /ping2' => function() {
+        Response::success(['pong2' => true]);
+    },
+    'GET /inspect-db' => function() {
+        require_once __DIR__ . '/inspect_db.php';
+    },
+
     // Auth (public)
     'POST /auth/login'           => ['AuthController', 'login'],
     'POST /auth/register'        => ['AuthController', 'register'],
@@ -236,15 +246,6 @@ $routes = [
     },
     'GET /api/debug/db' => function() {
         return handle_db_debug();
-    },
-    'GET /api/ping' => function() {
-        Response::success(['pong' => true]);
-    },
-    'GET /ping2' => function() {
-        Response::success(['pong2' => true]);
-    },
-    'GET /debug/email' => function() {
-        return handle_email_debug();
     },
     'GET /api/debug/email' => function() {
         return handle_email_debug();

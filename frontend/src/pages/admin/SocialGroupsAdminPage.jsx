@@ -10,6 +10,7 @@ import { socialApi } from '../../api/social';
 
 export default function SocialGroupsAdminPage() {
     const [groups, setGroups] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showAssignModal, setShowAssignModal] = useState(false);

@@ -30,4 +30,56 @@ class SocialController {
 
         Response::success($response);
     }
+
+    /**
+     * Get user social profile
+     */
+    public static function getProfile(): void {
+        AuthMiddleware::handle();
+        $db = Database::getInstance();
+        $userId = (int)($_GET['id'] ?? 0);
+
+        if (!$userId) {
+            Response::error('User ID is required.');
+        }
+
+        // 1. Get User Details
+        $stmt = $db->prepare("
+            SELECT id, firstname, lastname, avatar_image, role, bio, location, created_at
+            FROM users 
+            WHERE id = ?
+        ");
+        $stmt->execute([$userId]);
+        $profile = $stmt->fetch();
+
+        if (!$profile) {
+            Response::notFound('User profile not found.');
+        }
+
+        // 2. Get Stats
+        $stmt = $db->prepare("SELECT COUNT(*) as post_count FROM group_posts WHERE user_id = ? AND status = 'published'");
+        $stmt->execute([$userId]);
+        $profile['post_count'] = $stmt->fetch()['post_count'];
+
+        $stmt = $db->prepare("SELECT COUNT(*) as group_count FROM group_members WHERE user_id = ? AND status = 'active'");
+        $stmt->execute([$userId]);
+        $profile['group_count'] = $stmt->fetch()['group_count'];
+
+        // 3. Get Recent Posts
+        $stmt = $db->prepare("
+            SELECT p.*, u.firstname, u.lastname, u.avatar_image, g.name as group_name, g.slug as group_slug,
+                   (SELECT COUNT(*) FROM post_likes WHERE post_id = p.id) as likes_count,
+                   (SELECT COUNT(*) FROM post_comments WHERE post_id = p.id) as comments_count
+            FROM group_posts p
+            JOIN users u ON p.user_id = u.id
+            JOIN social_groups g ON p.group_id = g.id
+            WHERE p.user_id = ? AND p.status = 'published'
+            ORDER BY p.created_at DESC
+            LIMIT 10
+        ");
+        $stmt->execute([$userId]);
+        $profile['posts'] = $stmt->fetchAll();
+
+        Response::success($profile);
+    }
 }

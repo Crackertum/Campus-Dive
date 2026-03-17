@@ -4,6 +4,9 @@ export const socialApi = {
     // Media Validation
     validateMediaUrl: (url) => api.get(`/social/validate-url?url=${encodeURIComponent(url)}`),
 
+    // Profiles
+    getProfile: (id) => api.get(`/social/profile?id=${id}`),
+
     // Global Feed
     getGlobalFeed: () => api.get('/social/feed'),
 

@@ -20,6 +20,11 @@ if (file_exists(__DIR__ . '/../.env')) {
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 
+// Proxy Fix for HTTPS
+if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+    $_SERVER['HTTPS'] = 'on';
+}
+
 register_shutdown_function(function () {
     $error = error_get_last();
     if ($error !== NULL && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {

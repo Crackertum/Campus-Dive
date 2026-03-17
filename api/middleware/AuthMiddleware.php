@@ -11,6 +11,7 @@ class AuthMiddleware {
         }
 
         if (!isset($_SESSION['user_id'])) {
+            error_log("AUTH_CHECK: Failed. SESSION_ID: " . session_id() . " URI: " . ($_SERVER['REQUEST_URI'] ?? 'unknown'));
             Response::unauthorized('Please log in to continue.');
         }
 

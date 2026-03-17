@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { UserAvatar } from '../ui/StatusBadge';
+import { UserAvatar } from '../../components/ui/StatusBadge';
 import { Image as ImageIcon, Video, FileText, Smile, Loader2, Users } from 'lucide-react';
 import PostCard from '../../components/social/PostCard';
 import { socialApi } from '../../api/social';

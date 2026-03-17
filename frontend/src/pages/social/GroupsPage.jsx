@@ -1,6 +1,3 @@
-import { Search, Plus, Filter, Users as UsersIcon, MessageSquare } from 'lucide-react';
-import { Link } from 'react-router-dom';
-
 import { useState, useEffect } from 'react';
 import { Search, Plus, Filter, Users as UsersIcon, MessageSquare, Loader2, Compass } from 'lucide-react';
 import { Link } from 'react-router-dom';

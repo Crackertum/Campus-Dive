@@ -5,7 +5,7 @@ import {
     MessageSquare, Users, Edit3, Grid, List, Plus
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { UserAvatar } from '../ui/StatusBadge';
+import { UserAvatar } from '../../components/ui/StatusBadge';
 import PostCard from '../../components/social/PostCard';
 
 const mockPosts = [

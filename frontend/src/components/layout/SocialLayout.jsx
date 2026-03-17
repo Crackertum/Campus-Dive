@@ -88,7 +88,7 @@ export default function SocialLayout() {
                                 onClick={() => setShowUserMenu(!showUserMenu)}
                                 className="flex items-center gap-2 p-1 rounded-full bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 hover:border-primary-500/50 transition-all"
                             >
-                                <UserAvatar user={user} size="xs" />
+                                <UserAvatar user={user} size="sm" />
                                 <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
                             </button>
                             

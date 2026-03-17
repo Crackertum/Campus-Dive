@@ -22,6 +22,7 @@ import GroupsPage from './pages/social/GroupsPage';
 import GroupProfilePage from './pages/social/GroupProfilePage';
 import SinglePostPage from './pages/social/SinglePostPage';
 import SocialProfilePage from './pages/social/SocialProfilePage';
+import GroupManagerDashboard from './pages/social/GroupManagerDashboard';
 
 // Public Pages
 import HomePage from './pages/public/HomePage';

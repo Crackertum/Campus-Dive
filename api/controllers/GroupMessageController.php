@@ -7,9 +7,14 @@ class GroupMessageController {
     /**
      * Get messages for a group
      */
-    public static function index(int $groupId): void {
+    public static function index(): void {
         $user = AuthMiddleware::handle();
+        $groupId = (int)($_GET['group_id'] ?? 0);
         $db = Database::getInstance();
+
+        if (!$groupId) {
+            Response::error('Group ID is required.');
+        }
 
         // Check membership
         $stmt = $db->prepare("SELECT role FROM group_members WHERE group_id = ? AND user_id = ? AND status = 'active'");

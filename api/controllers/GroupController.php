@@ -26,9 +26,14 @@ class GroupController {
     /**
      * Get single group details
      */
-    public static function show(string $slug): void {
+    public static function show(): void {
         $user = AuthMiddleware::handle();
+        $slug = $_GET['slug'] ?? '';
         $db = Database::getInstance();
+
+        if (empty($slug)) {
+            Response::error('Slug is required.');
+        }
 
         $stmt = $db->prepare("
             SELECT g.*, 
@@ -50,9 +55,16 @@ class GroupController {
     /**
      * Join a group
      */
-    public static function join(int $groupId): void {
+    public static function join(): void {
         $user = AuthMiddleware::handle();
+        $input = json_decode(file_get_contents('php://input'), true);
+        $groupId = (int)($input['group_id'] ?? 0);
+        
         $db = Database::getInstance();
+
+        if (!$groupId) {
+            Response::error('Group ID is required.');
+        }
 
         // Check if group exists
         $stmt = $db->prepare("SELECT is_private FROM social_groups WHERE id = ?");
@@ -81,9 +93,16 @@ class GroupController {
     /**
      * Leave a group
      */
-    public static function leave(int $groupId): void {
+    public static function leave(): void {
         $user = AuthMiddleware::handle();
+        $input = json_decode(file_get_contents('php://input'), true);
+        $groupId = (int)($input['group_id'] ?? 0);
+
         $db = Database::getInstance();
+
+        if (!$groupId) {
+            Response::error('Group ID is required.');
+        }
 
         $stmt = $db->prepare("DELETE FROM group_members WHERE group_id = ? AND user_id = ? AND role != 'manager'");
         $stmt->execute([$groupId, $user['id']]);

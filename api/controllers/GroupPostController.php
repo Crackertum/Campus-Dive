@@ -7,9 +7,14 @@ class GroupPostController {
     /**
      * Get feed for a specific group
      */
-    public static function index(int $groupId): void {
+    public static function index(): void {
         $user = AuthMiddleware::handle();
+        $groupId = (int)($_GET['group_id'] ?? 0);
         $db = Database::getInstance();
+
+        if (!$groupId) {
+            Response::error('Group ID is required.');
+        }
 
         $stmt = $db->prepare("
             SELECT p.*, u.firstname, u.lastname, u.avatar_image, g.name as group_name, g.slug as group_slug,
@@ -100,9 +105,16 @@ class GroupPostController {
     /**
      * Like/Unlike a post
      */
-    public static function toggleLike(int $postId): void {
+    public static function toggleLike(): void {
         $user = AuthMiddleware::handle();
+        $input = json_decode(file_get_contents('php://input'), true);
+        $postId = (int)($input['post_id'] ?? 0);
+        
         $db = Database::getInstance();
+
+        if (!$postId) {
+            Response::error('Post ID is required.');
+        }
 
         $stmt = $db->prepare("SELECT id FROM post_likes WHERE post_id = ? AND user_id = ?");
         $stmt->execute([$postId, $user['id']]);

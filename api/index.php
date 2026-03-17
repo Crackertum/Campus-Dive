@@ -328,34 +328,36 @@ $routes = [
     },
 
     // Social (Shared)
-    'POST /social/validate-url' => ['SocialController', 'validateUrl'],
+    'GET /social/validate-url'  => ['SocialController', 'validateUrl'],
 
-    // Groups
-    'GET /groups'           => ['GroupController', 'index'],
-    'GET /groups/:slug'      => ['GroupController', 'show'],
-    'POST /groups/:id/join'  => ['GroupController', 'join'],
-    'DELETE /groups/:id/leave' => ['GroupController', 'leave'],
-
-    // Posts
+    // Groups & Feed
     'GET /social/feed'          => ['GroupPostController', 'globalFeed'],
-    'GET /groups/:id/posts'     => ['GroupPostController', 'index'],
+    'GET /social/groups'        => ['GroupController', 'index'],
+    'GET /social/groups/detail' => ['GroupController', 'show'],
+    'POST /social/groups/join'  => ['GroupController', 'join'],
+    'POST /social/groups/leave' => ['GroupController', 'leave'],
+
+    // Posts & Interaction
+    'GET /social/posts'         => ['GroupPostController', 'index'],
     'POST /social/posts'        => ['GroupPostController', 'store'],
-    'POST /social/posts/:id/like' => ['GroupPostController', 'toggleLike'],
-    'POST /social/posts/comment' => ['GroupPostController', 'comment'],
+    'POST /social/posts/like'   => ['GroupPostController', 'toggleLike'],
+    'POST /social/posts/comment'=> ['GroupPostController', 'comment'],
 
-    // Messaging
-    'GET /groups/:id/messages'  => ['GroupMessageController', 'index'],
-    'POST /groups/messages'     => ['GroupMessageController', 'store'],
+    // Chat
+    'GET /social/messages'      => ['GroupMessageController', 'index'],
+    'POST /social/messages'     => ['GroupMessageController', 'store'],
 
-    // Admin & Management
-    'POST /admin/groups'            => ['AdminGroupController', 'store'],
-    'DELETE /admin/groups/:id'      => ['AdminGroupController', 'destroy'],
-    'POST /admin/groups/:id/manager' => ['AdminGroupController', 'assignManager'],
+    // Admin Group Management
+    'GET /social/admin/groups'     => ['AdminGroupController', 'index'],
+    'POST /social/admin/groups'    => ['AdminGroupController', 'store'],
+    'DELETE /social/admin/groups'  => ['AdminGroupController', 'destroy'],
+    'POST /social/admin/assign-manager' => ['AdminGroupController', 'assignManager'],
 
-    'PUT /manager/groups/:id/settings' => ['GroupManagerController', 'updateSettings'],
-    'PUT /manager/groups/:id/members'  => ['GroupManagerController', 'updateMemberStatus'],
-    'GET /manager/groups/:id/pending'  => ['GroupManagerController', 'getPendingPosts'],
-    'POST /manager/posts/:id/moderate' => ['GroupManagerController', 'moderatePost'],
+    // Manager Controls
+    'POST /social/manager/settings'      => ['GroupManagerController', 'updateSettings'],
+    'POST /social/manager/member-status'  => ['GroupManagerController', 'updateMemberStatus'],
+    'GET /social/manager/pending'        => ['GroupManagerController', 'getPendingPosts'],
+    'POST /social/manager/moderate-post' => ['GroupManagerController', 'moderatePost'],
 ];
 
 function handle_email_debug() {

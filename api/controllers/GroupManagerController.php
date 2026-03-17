@@ -25,8 +25,10 @@ class GroupManagerController {
     /**
      * Update group settings
      */
-    public static function updateSettings(int $id): void {
-        self::checkAccess($id);
+    public static function updateSettings(): void {
+        $groupId = (int)($_GET['group_id'] ?? 0);
+        self::checkAccess($groupId);
+        
         $input = json_decode(file_get_contents('php://input'), true);
         $db = Database::getInstance();
 
@@ -55,7 +57,7 @@ class GroupManagerController {
             Response::error('No fields to update.');
         }
 
-        $params[] = $id;
+        $params[] = $groupId;
         $sql = "UPDATE social_groups SET " . implode(', ', $updates) . " WHERE id = ?";
         $db->prepare($sql)->execute($params);
 
@@ -65,9 +67,11 @@ class GroupManagerController {
     /**
      * Manage member status (approve, ban, make moderator)
      */
-    public static function updateMemberStatus(int $groupId): void {
-        self::checkAccess($groupId);
+    public static function updateMemberStatus(): void {
         $input = json_decode(file_get_contents('php://input'), true);
+        $groupId = (int)($input['group_id'] ?? 0);
+        
+        self::checkAccess($groupId);
         $db = Database::getInstance();
 
         $userId = (int)($input['user_id'] ?? 0);
@@ -101,8 +105,10 @@ class GroupManagerController {
     /**
      * Get pending posts for approval
      */
-    public static function getPendingPosts(int $groupId): void {
+    public static function getPendingPosts(): void {
+        $groupId = (int)($_GET['group_id'] ?? 0);
         self::checkAccess($groupId);
+        
         $db = Database::getInstance();
 
         $stmt = $db->prepare("
@@ -119,7 +125,11 @@ class GroupManagerController {
     /**
      * Approve or Reject a post
      */
-    public static function moderatePost(int $postId): void {
+    public static function moderatePost(): void {
+        $input = json_decode(file_get_contents('php://input'), true);
+        $postId = (int)($input['post_id'] ?? 0);
+        $action = $input['action'] ?? 'approve'; // approve, reject
+        
         $db = Database::getInstance();
         
         // Find group first to check access
@@ -130,9 +140,6 @@ class GroupManagerController {
 
         self::checkAccess($post['group_id']);
         
-        $input = json_decode(file_get_contents('php://input'), true);
-        $action = $input['action'] ?? 'approve'; // approve, reject
-
         $status = ($action === 'approve') ? 'published' : 'rejected';
         
         $db->prepare("UPDATE group_posts SET status = ? WHERE id = ?")

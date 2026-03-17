@@ -6,9 +6,8 @@ class SocialController {
 
     public static function validateUrl(): void {
         $user = AuthMiddleware::handle();
-        $input = json_decode(file_get_contents('php://input'), true);
+        $url = trim($_GET['url'] ?? '');
         
-        $url = trim($input['url'] ?? '');
         if (empty($url)) {
             Response::error('URL is required.', 400);
         }

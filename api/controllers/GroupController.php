@@ -1,0 +1,97 @@
+<?php
+/**
+ * Controller for managing Social Groups
+ */
+class GroupController {
+
+    /**
+     * List all active groups
+     */
+    public static function index(): void {
+        $user = AuthMiddleware::handle();
+        $db = Database::getInstance();
+
+        $stmt = $db->prepare("
+            SELECT g.*, 
+                   (SELECT COUNT(*) FROM group_members WHERE group_id = g.id) as member_count,
+                   (SELECT role FROM group_members WHERE group_id = g.id AND user_id = ?) as user_role
+            FROM social_groups g
+            WHERE g.status = 'active'
+            ORDER BY member_count DESC
+        ");
+        $stmt->execute([$user['id']]);
+        Response::success($stmt->fetchAll());
+    }
+
+    /**
+     * Get single group details
+     */
+    public static function show(string $slug): void {
+        $user = AuthMiddleware::handle();
+        $db = Database::getInstance();
+
+        $stmt = $db->prepare("
+            SELECT g.*, 
+                   (SELECT COUNT(*) FROM group_members WHERE group_id = g.id) as member_count,
+                   (SELECT role FROM group_members WHERE group_id = g.id AND user_id = ?) as user_role
+            FROM social_groups g
+            WHERE g.slug = ? AND g.status = 'active'
+        ");
+        $stmt->execute([$user['id'], $slug]);
+        $group = $stmt->fetch();
+
+        if (!$group) {
+            Response::notFound('Group not found.');
+        }
+
+        Response::success($group);
+    }
+
+    /**
+     * Join a group
+     */
+    public static function join(int $groupId): void {
+        $user = AuthMiddleware::handle();
+        $db = Database::getInstance();
+
+        // Check if group exists
+        $stmt = $db->prepare("SELECT is_private FROM social_groups WHERE id = ?");
+        $stmt->execute([$groupId]);
+        $group = $stmt->fetch();
+
+        if (!$group) {
+            Response::notFound('Group not found.');
+        }
+
+        $status = $group['is_private'] ? 'pending' : 'active';
+
+        try {
+            $stmt = $db->prepare("INSERT INTO group_members (group_id, user_id, status) VALUES (?, ?, ?)");
+            $stmt->execute([$groupId, $user['id'], $status]);
+            
+            Response::success(null, $status === 'active' ? 'Joined successfully!' : 'Request sent to group manager.');
+        } catch (PDOException $e) {
+            if ($e->getCode() == 23000) {
+                Response::error('You are already a member or have a pending request.');
+            }
+            throw $e;
+        }
+    }
+
+    /**
+     * Leave a group
+     */
+    public static function leave(int $groupId): void {
+        $user = AuthMiddleware::handle();
+        $db = Database::getInstance();
+
+        $stmt = $db->prepare("DELETE FROM group_members WHERE group_id = ? AND user_id = ? AND role != 'manager'");
+        $stmt->execute([$groupId, $user['id']]);
+
+        if ($stmt->rowCount() > 0) {
+            Response::success(null, 'Left group successfully.');
+        } else {
+            Response::error('Could not leave group. Managers cannot leave unless they delete the group or transfer ownership.');
+        }
+    }
+}

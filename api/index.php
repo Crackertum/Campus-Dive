@@ -124,6 +124,13 @@ require_once __DIR__ . '/controllers/StudentController.php';
 require_once __DIR__ . '/controllers/AdminController.php';
 require_once __DIR__ . '/controllers/MessageController.php';
 require_once __DIR__ . '/controllers/NotificationController.php';
+require_once __DIR__ . '/controllers/SocialController.php';
+require_once __DIR__ . '/controllers/GroupController.php';
+require_once __DIR__ . '/controllers/GroupPostController.php';
+require_once __DIR__ . '/controllers/GroupMessageController.php';
+require_once __DIR__ . '/controllers/AdminGroupController.php';
+require_once __DIR__ . '/controllers/GroupManagerController.php';
+require_once __DIR__ . '/services/UrlMediaService.php';
 
 // Parse route
 $requestUri = $_SERVER['REQUEST_URI'];
@@ -312,6 +319,36 @@ $routes = [
 
         Response::success($output);
     },
+
+    // Social (Shared)
+    'POST /social/validate-url' => ['SocialController', 'validateUrl'],
+
+    // Groups
+    'GET /groups'           => ['GroupController', 'index'],
+    'GET /groups/:slug'      => ['GroupController', 'show'],
+    'POST /groups/:id/join'  => ['GroupController', 'join'],
+    'DELETE /groups/:id/leave' => ['GroupController', 'leave'],
+
+    // Posts
+    'GET /social/feed'          => ['GroupPostController', 'globalFeed'],
+    'GET /groups/:id/posts'     => ['GroupPostController', 'index'],
+    'POST /social/posts'        => ['GroupPostController', 'store'],
+    'POST /social/posts/:id/like' => ['GroupPostController', 'toggleLike'],
+    'POST /social/posts/comment' => ['GroupPostController', 'comment'],
+
+    // Messaging
+    'GET /groups/:id/messages'  => ['GroupMessageController', 'index'],
+    'POST /groups/messages'     => ['GroupMessageController', 'store'],
+
+    // Admin & Management
+    'POST /admin/groups'            => ['AdminGroupController', 'store'],
+    'DELETE /admin/groups/:id'      => ['AdminGroupController', 'destroy'],
+    'POST /admin/groups/:id/manager' => ['AdminGroupController', 'assignManager'],
+
+    'PUT /manager/groups/:id/settings' => ['GroupManagerController', 'updateSettings'],
+    'PUT /manager/groups/:id/members'  => ['GroupManagerController', 'updateMemberStatus'],
+    'GET /manager/groups/:id/pending'  => ['GroupManagerController', 'getPendingPosts'],
+    'POST /manager/posts/:id/moderate' => ['GroupManagerController', 'moderatePost'],
 ];
 
 function handle_email_debug() {

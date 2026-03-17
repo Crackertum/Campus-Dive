@@ -32,6 +32,7 @@ export default function Sidebar() {
         { to: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
         { to: '/admin/students', icon: Users, label: 'Students' },
         { to: '/admin/roles', icon: Shield, label: 'Roles' },
+        { to: '/admin/social', icon: Users2, label: 'Hub Management' },
         { to: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
         { to: '/messages', icon: MessageSquare, label: 'Messages' },
         { to: '/settings', icon: Settings, label: 'Settings' },

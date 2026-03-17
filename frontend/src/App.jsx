@@ -12,6 +12,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import StudentsPage from './pages/admin/StudentsPage';
 import RolesPage from './pages/admin/RolesPage';
 import AnalyticsPage from './pages/admin/AnalyticsPage';
+import SocialGroupsAdminPage from './pages/admin/SocialGroupsAdminPage';
 import MessagesPage from './pages/messages/MessagesPage';
 import DocumentsPage from './pages/student/DocumentsPage';
 import SettingsPage from './pages/student/SettingsPage';
@@ -104,6 +105,11 @@ export default function App() {
             <AnalyticsPage />
           </RouteGuard>
         } />
+        <Route path="/admin/social" element={
+          <RouteGuard roles={['admin', 'Admin']}>
+            <SocialGroupsAdminPage />
+          </RouteGuard>
+        } />
 
         {/* Shared Protected Routes */}
         <Route path="/messages" element={
@@ -129,9 +135,14 @@ export default function App() {
               <GroupsPage />
             </RouteGuard>
           } />
-          <Route path="groups/:id" element={
+          <Route path="groups/:slug" element={
             <RouteGuard roles={['user', 'Student']}>
               <GroupProfilePage />
+            </RouteGuard>
+          } />
+          <Route path="manager/:slug" element={
+            <RouteGuard roles={['user', 'Student']}>
+              <GroupManagerDashboard />
             </RouteGuard>
           } />
           <Route path="posts/:id" element={

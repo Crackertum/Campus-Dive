@@ -42,6 +42,7 @@ class GroupManagerController {
             'rules' => $input['rules'] ?? null,
             'allow_member_posts' => isset($input['allow_member_posts']) ? (int)$input['allow_member_posts'] : null,
             'post_approval_required' => isset($input['post_approval_required']) ? (int)$input['post_approval_required'] : null,
+            'avatar_url' => $input['avatar_url'] ?? null,
         ];
 
         $updates = [];

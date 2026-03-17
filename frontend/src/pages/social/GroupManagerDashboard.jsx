@@ -25,7 +25,8 @@ export default function GroupManagerDashboard() {
         category: '',
         cover_color: '#6366f1',
         is_private: false,
-        post_approval_required: false
+        post_approval_required: false,
+        avatar_url: ''
     });
 
     useEffect(() => {
@@ -46,7 +47,8 @@ export default function GroupManagerDashboard() {
                 category: res.data.category || '',
                 cover_color: res.data.cover_color || '#6366f1',
                 is_private: !!res.data.is_private,
-                post_approval_required: !!res.data.post_approval_required
+                post_approval_required: !!res.data.post_approval_required,
+                avatar_url: res.data.avatar_url || ''
             });
         } catch (err) {
             console.error('Failed to fetch group:', err);
@@ -183,6 +185,24 @@ export default function GroupManagerDashboard() {
                                             />
                                             <span className="text-xs font-mono dark:text-slate-400 uppercase">{formData.cover_color}</span>
                                         </div>
+                                </div>
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Group Avatar URL</label>
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-800">
+                                            {formData.avatar_url ? (
+                                                <img src={formData.avatar_url} alt="Avatar Preview" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <span className="text-xl font-black text-slate-400">{group.icon_initials || group.name[0]}</span>
+                                            )}
+                                        </div>
+                                        <input 
+                                            type="text"
+                                            value={formData.avatar_url}
+                                            onChange={(e) => setFormData({...formData, avatar_url: e.target.value})}
+                                            className="flex-1 bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-slate-800 rounded-xl px-4 py-2 text-sm dark:text-white focus:ring-primary-500"
+                                            placeholder="Paste image URL..."
+                                        />
                                     </div>
                                 </div>
                             </div>

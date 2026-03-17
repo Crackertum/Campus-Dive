@@ -132,8 +132,12 @@ export default function GroupProfilePage() {
                 
                 <div className="bg-white dark:bg-[#0B1120] px-8 pb-8 border-x border-b border-slate-200 dark:border-slate-800">
                     <div className="flex flex-col sm:flex-row items-end gap-6 -mt-12 relative z-10 px-0 sm:px-4">
-                        <div className={`w-24 h-24 sm:w-32 sm:h-32 rounded-[2.5rem] bg-gradient-to-br ${coverGradient} border-8 border-white dark:border-[#0B1120] flex items-center justify-center text-white text-3xl sm:text-5xl font-black shadow-2xl`}>
-                            {group.icon_initials || group.name[0]}
+                        <div className={`w-24 h-24 sm:w-32 sm:h-32 rounded-[2.5rem] bg-gradient-to-br ${coverGradient} border-8 border-white dark:border-[#0B1120] flex items-center justify-center text-white text-3xl sm:text-5xl font-black shadow-2xl overflow-hidden`}>
+                            {group.avatar_url ? (
+                                <img src={group.avatar_url} alt={group.name} className="w-full h-full object-cover" />
+                            ) : (
+                                group.icon_initials || group.name[0]
+                            )}
                         </div>
                         
                         <div className="flex-1 pb-4 text-center sm:text-left">
@@ -142,6 +146,11 @@ export default function GroupProfilePage() {
                                 <span className={`inline-flex items-center px-3 py-1 bg-emerald-500/10 text-emerald-500 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-500/20 w-fit mx-auto sm:mx-0`}>
                                     {group.category || 'Official'}
                                 </span>
+                                {group.user_role === 'manager' && (
+                                    <span className="inline-flex items-center px-3 py-1 bg-primary-500/10 text-primary-500 rounded-full text-[10px] font-black uppercase tracking-widest border border-primary-500/20 w-fit mx-auto sm:mx-0">
+                                        Manager
+                                    </span>
+                                )}
                             </div>
                             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-slate-500 text-xs font-bold uppercase tracking-widest">
                                 <span className="flex items-center gap-1.5"><Users className="w-4 h-4 text-primary-500" /> {group.member_count} Members</span>
@@ -325,12 +334,12 @@ export default function GroupProfilePage() {
                     {group.user_role === 'manager' && (
                         <Link 
                             to={`/social/manager/${group.slug}`}
-                            className="w-full flex items-center justify-center gap-3 p-6 bg-gradient-to-br from-primary-500 to-indigo-600 rounded-3xl text-white shadow-xl shadow-primary-500/20 group hover:-translate-y-1 transition-all"
+                            className="w-full flex items-center justify-center gap-3 p-6 bg-gradient-to-br from-primary-500 via-primary-600 to-indigo-600 rounded-3xl text-white shadow-xl shadow-primary-500/30 group hover:-translate-y-1 transition-all border border-white/10"
                         >
-                            <ShieldCheck className="w-6 h-6 group-hover:rotate-12 transition-transform" />
+                            <ShieldCheck className="w-7 h-7 group-hover:rotate-12 transition-transform" />
                             <div className="text-left">
-                                <p className="text-[10px] font-black uppercase tracking-widest opacity-80 leading-none mb-1">Management</p>
-                                <p className="text-sm font-black uppercase tracking-tight">Hub Dashboard</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest opacity-80 leading-none mb-1">Hub Management</p>
+                                <p className="text-sm font-black uppercase tracking-tight">Open Customizer</p>
                             </div>
                         </Link>
                     )}

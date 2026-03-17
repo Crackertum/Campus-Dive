@@ -19,7 +19,7 @@ export default function MediaUrlInput({ onSelect, onClear, initialValue = '' }) 
         setError(null);
 
         try {
-            const res = await socialApi.validateUrl(inputUrl);
+            const res = await socialApi.validateMediaUrl(inputUrl);
             if (res.success) {
                 setPreview(res.data);
                 onSelect(res.data);

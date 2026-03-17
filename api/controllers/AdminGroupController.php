@@ -54,10 +54,10 @@ class AdminGroupController {
         }
 
         $stmt = $db->prepare("
-            INSERT INTO social_groups (name, slug, description, category, is_private, created_by, manager_id) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO social_groups (name, slug, description, category, avatar_url, is_private, created_by, manager_id) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ");
-        $stmt->execute([$name, $slug, $description, $category, $isPrivate, $user['id'], $managerId]);
+        $stmt->execute([$name, $slug, $description, $category, $input['avatar_url'] ?? null, $isPrivate, $user['id'], $managerId]);
         $groupId = $db->lastInsertId();
 
         // If manager assigned, add them to group_members as manager

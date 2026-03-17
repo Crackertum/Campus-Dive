@@ -329,9 +329,6 @@ $routes = [
     // Social (Shared)
     'GET /social/validate-url'  => ['SocialController', 'validateUrl'],
     'GET /social/profile'       => ['SocialController', 'getProfile'],
-    'GET /social/migrate-profiles' => function() {
-        require_once __DIR__ . '/migrate_profiles.php';
-    },
 
     // Groups & Feed
     'GET /social/feed'          => ['GroupPostController', 'globalFeed'],

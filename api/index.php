@@ -261,17 +261,6 @@ $routes = [
             Response::error("Migration failed: " . $e->getMessage(), 500);
         }
     },
-    'GET /social/migrate' => function() {
-        try {
-            require_once __DIR__ . '/migrate_social.php';
-        } catch (Exception $e) {
-            Response::error("Migration failed: " . $e->getMessage(), 500);
-        }
-    },
-    'GET /debug-session' => function() {
-        require_once __DIR__ . '/debug_session.php';
-    },
-
     'GET /auth/google-url' => function() {
         try {
             $rootPath = dirname(__DIR__);

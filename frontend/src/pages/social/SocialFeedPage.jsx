@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { UserAvatar } from '../../components/ui/StatusBadge';
 import { Image as ImageIcon, Video, FileText, Smile, Loader2, Users } from 'lucide-react';
@@ -196,9 +197,9 @@ export default function SocialFeedPage() {
                     </div>
                     <h3 className="text-lg font-black dark:text-white mb-2">No posts yet</h3>
                     <p className="text-sm text-slate-500 mb-6 max-w-xs mx-auto">Join some groups to see what's happening in your campus community!</p>
-                    <a href="/social/groups" className="btn-primary px-8 py-3 rounded-full text-xs font-black uppercase tracking-widest inline-flex items-center gap-2 shadow-glow shadow-primary-500/20">
+                    <Link to="/social/groups" className="btn-primary px-8 py-3 rounded-full text-xs font-black uppercase tracking-widest inline-flex items-center gap-2 shadow-glow shadow-primary-500/20">
                         Explore Groups
-                    </a>
+                    </Link>
                 </div>
             )}
 

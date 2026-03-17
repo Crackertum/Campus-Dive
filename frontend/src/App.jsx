@@ -124,45 +124,45 @@ export default function App() {
           </RouteGuard>
         } />
 
-        {/* Social Hub Routes */}
-        <Route path="/social" element={<SocialLayout />}>
-          <Route index element={
-            <RouteGuard roles={['user', 'Student', 'admin', 'Admin', 'manager', 'Manager']}>
-              <SocialFeedPage />
-            </RouteGuard>
-          } />
-          <Route path="groups" element={
-            <RouteGuard roles={['user', 'Student', 'admin', 'Admin', 'manager', 'Manager']}>
-              <GroupsPage />
-            </RouteGuard>
-          } />
-          <Route path="groups/:slug" element={
-            <RouteGuard roles={['user', 'Student', 'admin', 'Admin', 'manager', 'Manager']}>
-              <GroupProfilePage />
-            </RouteGuard>
-          } />
-          <Route path="manager/:slug" element={
-            <RouteGuard roles={['user', 'Student', 'admin', 'Admin', 'manager', 'Manager']}>
-              <GroupManagerDashboard />
-            </RouteGuard>
-          } />
-          <Route path="posts/:id" element={
-            <RouteGuard roles={['user', 'Student', 'admin', 'Admin', 'manager', 'Manager']}>
-              <SinglePostPage />
-            </RouteGuard>
-          } />
-          <Route path="profile" element={
-            <RouteGuard roles={['user', 'Student', 'admin', 'Admin', 'manager', 'Manager']}>
-              <SocialProfilePage />
-            </RouteGuard>
-          } />
-          <Route path="profile/:id" element={
-            <RouteGuard roles={['user', 'Student', 'admin', 'Admin', 'manager', 'Manager']}>
-              <SocialProfilePage />
-            </RouteGuard>
-          } />
-        </Route>
+      </Route>
 
+      {/* Social Hub Routes (Standalone Layout) */}
+      <Route path="/social" element={<SocialLayout />}>
+        <Route index element={
+          <RouteGuard roles={['user', 'Student', 'admin', 'Admin', 'manager', 'Manager']}>
+            <SocialFeedPage />
+          </RouteGuard>
+        } />
+        <Route path="groups" element={
+          <RouteGuard roles={['user', 'Student', 'admin', 'Admin', 'manager', 'Manager']}>
+            <GroupsPage />
+          </RouteGuard>
+        } />
+        <Route path="groups/:slug" element={
+          <RouteGuard roles={['user', 'Student', 'admin', 'Admin', 'manager', 'Manager']}>
+            <GroupProfilePage />
+          </RouteGuard>
+        } />
+        <Route path="manager/:slug" element={
+          <RouteGuard roles={['user', 'Student', 'admin', 'Admin', 'manager', 'Manager']}>
+            <GroupManagerDashboard />
+          </RouteGuard>
+        } />
+        <Route path="posts/:id" element={
+          <RouteGuard roles={['user', 'Student', 'admin', 'Admin', 'manager', 'Manager']}>
+            <SinglePostPage />
+          </RouteGuard>
+        } />
+        <Route path="profile" element={
+          <RouteGuard roles={['user', 'Student', 'admin', 'Admin', 'manager', 'Manager']}>
+            <SocialProfilePage />
+          </RouteGuard>
+        } />
+        <Route path="profile/:id" element={
+          <RouteGuard roles={['user', 'Student', 'admin', 'Admin', 'manager', 'Manager']}>
+            <SocialProfilePage />
+          </RouteGuard>
+        } />
       </Route>
 
       {/* 404 Redirect */}

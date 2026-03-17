@@ -2,16 +2,21 @@ import { useState, useEffect } from 'react';
 import { 
     Plus, Search, Filter, MoreVertical, 
     Trash2, UserPlus, Settings, ExternalLink,
-    Users, MessageSquare, ShieldCheck, Loader2, AlertCircle
+    Users, MessageSquare, ShieldCheck, Loader2, AlertCircle,
+    Lock, Globe, X
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { socialApi } from '../../api/social';
 
 export default function SocialGroupsAdminPage() {
     const [groups, setGroups] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showAssignModal, setShowAssignModal] = useState(false);
+    const [selectedGroup, setSelectedGroup] = useState(null);
+    const [userSearch, setUserSearch] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [isSearchingUsers, setIsSearchingUsers] = useState(false);
     
     // Create Group Form
     const [newGroup, setNewGroup] = useState({
@@ -48,6 +53,38 @@ export default function SocialGroupsAdminPage() {
             fetchGroups();
         } catch (err) {
             alert(err.message || 'Failed to create group');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleSearchUsers = async (query) => {
+        setUserSearch(query);
+        if (!query.trim()) {
+            setSearchResults([]);
+            return;
+        }
+        setIsSearchingUsers(true);
+        try {
+            const res = await socialApi.searchUsers(query);
+            setSearchResults(res.data || []);
+        } catch (err) {
+            console.error('User search failed:', err);
+        } finally {
+            setIsSearchingUsers(false);
+        }
+    };
+
+    const handleAssignManager = async (userId) => {
+        setIsSubmitting(true);
+        try {
+            await socialApi.assignManager(selectedGroup.id, userId);
+            setShowAssignModal(false);
+            setUserSearch('');
+            setSearchResults([]);
+            fetchGroups();
+        } catch (err) {
+            alert(err.message || 'Assignment failed');
         } finally {
             setIsSubmitting(false);
         }
@@ -188,6 +225,16 @@ export default function SocialGroupsAdminPage() {
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button 
+                                                onClick={() => {
+                                                    setSelectedGroup(group);
+                                                    setShowAssignModal(true);
+                                                }}
+                                                className="p-2 text-slate-400 hover:text-primary-500 transition-colors"
+                                                title="Assign Manager"
+                                            >
+                                                <UserPlus className="w-4 h-4" />
+                                            </button>
                                             <Link to={`/social/groups/${group.slug}`} className="p-2 text-slate-400 hover:text-primary-500 transition-colors">
                                                 <ExternalLink className="w-4 h-4" />
                                             </Link>
@@ -295,22 +342,73 @@ export default function SocialGroupsAdminPage() {
                     </div>
                 </div>
             )}
+
+            {/* Assign Manager Modal */}
+            {showAssignModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-md bg-slate-900/40 animate-in fade-in duration-300">
+                    <div className="bg-white dark:bg-[#0B1120] w-full max-w-md rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+                        <div className="p-8 border-b border-slate-50 dark:border-white/5 flex items-center justify-between">
+                            <div>
+                                <h3 className="text-xl font-black dark:text-white tracking-tight">Assign Manager</h3>
+                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Designate lead for {selectedGroup?.name}</p>
+                            </div>
+                            <button onClick={() => setShowAssignModal(false)} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-all">
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
+                        
+                        <div className="p-8 space-y-6">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Search Users</label>
+                                <div className="relative">
+                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                    <input 
+                                        type="text"
+                                        value={userSearch}
+                                        onChange={(e) => handleSearchUsers(e.target.value)}
+                                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-slate-800 rounded-2xl pl-11 pr-4 py-3 text-sm dark:text-white focus:ring-2 focus:ring-primary-500"
+                                        placeholder="Name or email..."
+                                    />
+                                    {isSearchingUsers && (
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                                            <Loader2 className="w-4 h-4 text-primary-500 animate-spin" />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2 no-scrollbar">
+                                {searchResults.map(u => (
+                                    <button 
+                                        key={u.id}
+                                        onClick={() => handleAssignManager(u.id)}
+                                        disabled={isSubmitting}
+                                        className="w-full flex items-center justify-between p-4 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-primary-500/50 hover:bg-primary-500/5 transition-all text-left group"
+                                    >
+                                        <div>
+                                            <p className="text-sm font-black dark:text-white leading-none mb-1 group-hover:text-primary-500 transition-colors">{u.firstname} {u.lastname}</p>
+                                            <p className="text-[10px] text-slate-500 font-bold truncate">{u.email}</p>
+                                        </div>
+                                        <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                            {u.role}
+                                        </div>
+                                    </button>
+                                ))}
+                                {userSearch && !isSearchingUsers && searchResults.length === 0 && (
+                                    <div className="text-center py-6">
+                                        <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">No users found</p>
+                                    </div>
+                                )}
+                                {!userSearch && (
+                                    <div className="text-center py-6">
+                                        <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Type to search for users</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
-    );
-}
-
-function X({ className }) {
-    return (
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
-            <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
-        </svg>
-    );
-}
-
-function Globe({ className }) {
-    return (
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
-            <circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>
-        </svg>
     );
 }

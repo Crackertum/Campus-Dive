@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Outlet, NavLink, Link } from 'react-router-dom';
 import { 
     Home, Users, User, Settings, Bell, Plus, Search, 
-    Moon, Sun, ChevronDown, LogOut, ExternalLink, MessageSquare
+    Moon, Sun, ChevronDown, LogOut, ExternalLink, MessageSquare, LayoutDashboard
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -20,10 +20,10 @@ export default function SocialLayout() {
     const [showUserMenu, setShowUserMenu] = useState(false);
 
     const navItems = [
+        { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { to: '/social', icon: Home, label: 'Home Feed' },
         { to: '/social/groups', icon: Users, label: 'My Groups' },
         { to: '/social/profile', icon: User, label: 'My Profile' },
-        { to: '/settings', icon: Settings, label: 'Settings' },
     ];
 
     const quickLinks = [

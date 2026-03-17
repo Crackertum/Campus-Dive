@@ -24,7 +24,7 @@ export default function Sidebar() {
         { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { to: '/documents', icon: FileText, label: 'Documents' },
         { to: '/messages', icon: MessageSquare, label: 'Messages' },
-        { to: '/social', icon: Users2, label: 'Social Hub' },
+        { to: '/social', icon: Users2, label: 'Social Hub', target: '_blank' },
         { to: '/settings', icon: Settings, label: 'Settings' },
     ];
 
@@ -33,6 +33,7 @@ export default function Sidebar() {
         { to: '/admin/students', icon: Users, label: 'Students' },
         { to: '/admin/roles', icon: Shield, label: 'Roles' },
         { to: '/admin/social', icon: Users2, label: 'Hub Management' },
+        { to: '/admin/social-hub', icon: Users2, label: 'Social Hub', target: '_blank' },
         { to: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
         { to: '/messages', icon: MessageSquare, label: 'Messages' },
         { to: '/settings', icon: Settings, label: 'Settings' },
@@ -57,12 +58,14 @@ export default function Sidebar() {
                 {links.map(link => (
                     <NavLink
                         key={link.to}
-                        to={link.to}
+                        to={link.to === '/admin/social-hub' ? '/social' : link.to}
+                        target={link.target}
+                        rel={link.target === '_blank' ? 'noopener noreferrer' : undefined}
                         end={link.to === '/dashboard' || link.to === '/admin'}
                         onClick={() => setMobileOpen(false)}
                         className={({ isActive }) =>
                             `flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 group
-              ${isActive
+              ${isActive && !link.target
                                 ? 'bg-primary-500 text-white shadow-glow shadow-primary-500/20'
                                 : 'text-surface-600 dark:text-surface-400 hover:bg-white dark:hover:bg-white/5 hover:shadow-sm'
                             }`

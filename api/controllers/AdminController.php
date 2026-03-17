@@ -195,4 +195,27 @@ class AdminController {
             Response::error('Failed to update role permissions.', 500);
         }
     }
+    /** GET /api/admin/users - Search all users for assignment */
+    public static function users(): void {
+        $user = AuthMiddleware::handle();
+        RoleMiddleware::require([ROLE_ADMIN, 'Admin'], $user);
+
+        $search = $_GET['search'] ?? '';
+        $db = Database::getInstance();
+        
+        $sql = "SELECT id, firstname, lastname, email, role, role_id FROM users WHERE 1=1";
+        $params = [];
+
+        if (!empty($search)) {
+            $sql .= " AND (firstname LIKE ? OR lastname LIKE ? OR email LIKE ?)";
+            $s = "%$search%";
+            $params = [$s, $s, $s];
+        }
+
+        $sql .= " ORDER BY firstname ASC LIMIT 20";
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
+        
+        Response::success($stmt->fetchAll());
+    }
 }

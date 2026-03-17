@@ -15,8 +15,11 @@ export const socialApi = {
     
     // Group Posts
     getGroupPosts: (groupId) => api.get(`/social/posts?group_id=${groupId}`),
+    getPostDetail: (postId) => api.get(`/social/posts/show?id=${postId}`),
+    getComments: (postId) => api.get(`/social/posts/comments?post_id=${postId}`),
     createPost: (data) => api.post('/social/posts', data),
     likePost: (postId) => api.post('/social/posts/like', { post_id: postId }),
+    addComment: (data) => api.post('/social/posts/comment', data),
     
     // Group Messages
     getGroupMessages: (groupId) => api.get(`/social/messages?group_id=${groupId}`),
@@ -33,5 +36,6 @@ export const socialApi = {
     createGroup: (data) => api.post('/social/admin/groups', data),
     deleteGroup: (groupId) => api.delete(`/social/admin/groups?group_id=${groupId}`),
     assignManager: (groupId, userId) => api.post('/social/admin/assign-manager', { group_id: groupId, user_id: userId }),
+    searchUsers: (query) => api.get(`/admin/users?search=${encodeURIComponent(query)}`),
 };
 

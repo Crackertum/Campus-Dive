@@ -56,6 +56,33 @@ class GroupPostController {
     }
 
     /**
+     * Get a single post detail
+     */
+    public static function show(int $id): void {
+        $user = AuthMiddleware::handle();
+        $db = Database::getInstance();
+
+        $stmt = $db->prepare("
+            SELECT p.*, u.firstname, u.lastname, u.avatar_image, g.name as group_name, g.slug as group_slug,
+                   (SELECT COUNT(*) FROM post_likes WHERE post_id = p.id) as likes_count,
+                   (SELECT COUNT(*) FROM post_comments WHERE post_id = p.id) as comments_count,
+                   (SELECT 1 FROM post_likes WHERE post_id = p.id AND user_id = ?) as is_liked
+            FROM group_posts p
+            JOIN users u ON p.user_id = u.id
+            JOIN social_groups g ON p.group_id = g.id
+            WHERE p.id = ?
+        ");
+        $stmt->execute([$user['id'], $id]);
+        $post = $stmt->fetch();
+
+        if (!$post) {
+            Response::notFound('Post not found.');
+        }
+
+        Response::success($post);
+    }
+
+    /**
      * Create a new post
      */
     public static function store(): void {
@@ -161,5 +188,28 @@ class GroupPostController {
            ->execute([$postId, $postId]);
 
         Response::success(null, 'Comment added.');
+    }
+
+    /**
+     * Get comments for a post
+     */
+    public static function getComments(): void {
+        AuthMiddleware::handle();
+        $postId = (int)($_GET['post_id'] ?? 0);
+        $db = Database::getInstance();
+
+        if (!$postId) {
+            Response::error('Post ID is required.');
+        }
+
+        $stmt = $db->prepare("
+            SELECT c.*, u.firstname, u.lastname, u.avatar_image
+            FROM post_comments c
+            JOIN users u ON c.user_id = u.id
+            WHERE c.post_id = ?
+            ORDER BY c.created_at ASC
+        ");
+        $stmt->execute([$postId]);
+        Response::success($stmt->fetchAll());
     }
 }

@@ -196,6 +196,7 @@ $routes = [
     // Admin
     'GET  /admin/dashboard'      => ['AdminController', 'dashboard'],
     'GET  /admin/students'       => ['AdminController', 'students'],
+    'GET  /admin/users'          => ['AdminController', 'users'],
     'POST /admin/students/bulk-action' => ['AdminController', 'bulkAction'],
     'GET  /admin/roles'          => ['AdminController', 'roles'],
 
@@ -339,6 +340,8 @@ $routes = [
 
     // Posts & Interaction
     'GET /social/posts'         => ['GroupPostController', 'index'],
+    'GET /social/posts/show'    => ['GroupPostController', 'show'],
+    'GET /social/posts/comments'=> ['GroupPostController', 'getComments'],
     'POST /social/posts'        => ['GroupPostController', 'store'],
     'POST /social/posts/like'   => ['GroupPostController', 'toggleLike'],
     'POST /social/posts/comment'=> ['GroupPostController', 'comment'],

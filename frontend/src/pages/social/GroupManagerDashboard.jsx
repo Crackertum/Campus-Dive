@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
-    LayoutDashboard, Settings, Users, ShieldAlert, 
+    Home, LayoutDashboard, Settings, Users, ShieldAlert, 
     ArrowLeft, Loader2, Save, Trash2, Check, X,
     Image as ImageIcon, Palette, Globe, Lock, ShieldCheck
 } from 'lucide-react';
@@ -80,47 +80,52 @@ export default function GroupManagerDashboard() {
     }
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="space-y-12 animate-in fade-in duration-500">
             {/* Header */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <Link to={`/social/groups/${slug}`} className="p-2 bg-slate-100 dark:bg-white/5 rounded-full text-slate-500 hover:text-primary-500 transition-all">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                <div className="flex items-center gap-5">
+                    <Link to={`/social/groups/${slug}`} className="p-3 bg-slate-100 dark:bg-white/5 rounded-2xl text-slate-500 hover:text-primary-500 transition-all hover:scale-110 active:scale-95">
                         <ArrowLeft className="w-5 h-5" />
                     </Link>
                     <div>
-                        <h1 className="text-2xl font-black dark:text-white flex items-center gap-2 tracking-tight leading-none mb-1">
-                            {group.name} <span className="text-xs font-black text-primary-500 uppercase tracking-widest bg-primary-500/10 px-2 py-0.5 rounded-lg border border-primary-500/20">Manager</span>
-                        </h1>
-                        <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Hub Control Center</p>
+                        <div className="flex items-center gap-3 mb-1">
+                            <h1 className="text-3xl font-black dark:text-white tracking-tight leading-none">
+                                {group.name}
+                            </h1>
+                            <span className="text-[10px] font-black text-primary-500 uppercase tracking-widest bg-primary-500/10 px-3 py-1 rounded-full border border-primary-500/20 shadow-sm">
+                                Manager
+                            </span>
+                        </div>
+                        <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em]">Hub Control Center</p>
                     </div>
                 </div>
                 <div className="flex gap-3">
                      <button 
                         onClick={handleSaveSettings}
                         disabled={isSaving}
-                        className="btn-primary px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 shadow-glow shadow-primary-500/20 disabled:opacity-50"
+                        className="btn-primary px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-3 shadow-glow shadow-primary-500/20 disabled:opacity-50 transition-all hover:-translate-y-0.5"
                      >
-                        {isSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-4 h-4" />}
+                        {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                         Save Changes
                      </button>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-12">
                 {/* Sidebar Nav */}
                 <aside className="space-y-2">
                     {[
                         { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-                        { id: 'settings', label: 'Settings', icon: Settings },
+                        { id: 'settings', label: 'Customizer', icon: Settings },
                         { id: 'moderation', label: 'Moderation', icon: ShieldAlert },
                     ].map(tab => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`w-full flex items-center gap-3 px-6 py-4 rounded-3xl text-xs font-black uppercase tracking-widest transition-all ${
+                            className={`w-full flex items-center gap-4 px-6 py-4 rounded-3xl text-[11px] font-black uppercase tracking-widest transition-all ${
                                 activeTab === tab.id 
-                                ? 'bg-primary-500 text-white shadow-xl shadow-primary-500/20 translate-x-1' 
-                                : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-800 dark:hover:text-white'
+                                ? 'bg-primary-500 text-white shadow-xl shadow-primary-500/30 translate-x-2' 
+                                : 'text-slate-500 hover:bg-white dark:hover:bg-white/5 hover:text-slate-800 dark:hover:text-white border border-transparent hover:border-slate-200 dark:hover:border-white/5'
                             }`}
                         >
                             <tab.icon className="w-5 h-5" />
@@ -130,120 +135,134 @@ export default function GroupManagerDashboard() {
                 </aside>
 
                 {/* Main Content */}
-                <main className="space-y-8">
+                <main>
                     {activeTab === 'overview' && (
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                            <div className="card p-8 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1120] text-center">
-                                <p className="text-4xl font-black dark:text-white mb-2 leading-none">{group.member_count}</p>
-                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none">Total Members</p>
-                            </div>
-                            <div className="card p-8 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1120] text-center">
-                                <p className="text-4xl font-black dark:text-white mb-2 leading-none">0</p>
-                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none">Pending Posts</p>
-                            </div>
-                            <div className="card p-8 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1120] text-center">
-                                <p className="text-4xl font-black dark:text-white mb-2 leading-none">0</p>
-                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none">New This Week</p>
-                            </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            {[
+                                { label: 'Total Members', value: group.member_count, color: 'primary' },
+                                { label: 'Pending Posts', value: 0, color: 'amber' },
+                                { label: 'New This Week', value: 0, color: 'emerald' }
+                            ].map(stat => (
+                                <div key={stat.label} className="card p-10 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1120] text-center group hover:border-primary-500/30 transition-all hover:shadow-2xl hover:shadow-primary-500/5">
+                                    <p className={`text-5xl font-black dark:text-white mb-3 tracking-tighter transition-transform group-hover:scale-110`}>{stat.value}</p>
+                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none">{stat.label}</p>
+                                </div>
+                            ))}
                         </div>
                     )}
 
                     {activeTab === 'settings' && (
-                        <div className="space-y-8 animate-in fade-in slide-in-from-right-4">
-                            {/* General Settings */}
-                            <div className="card p-8 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1120] space-y-6">
-                                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">General Settings</h3>
-                                
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Description</label>
-                                    <textarea 
-                                        value={formData.description}
-                                        onChange={(e) => setFormData({...formData, description: e.target.value})}
-                                        className="w-full bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 text-sm dark:text-white focus:ring-primary-500 min-h-[120px]"
-                                        placeholder="Describe your hub..."
-                                    />
+                        <div className="space-y-8 animate-in fade-in slide-in-from-right-8 duration-500">
+                            {/* Visual Branding */}
+                            <div className="card p-10 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1120] space-y-10">
+                                <div>
+                                    <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest mb-1">Visual Branding</h3>
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Customize how your hub looks to others</p>
                                 </div>
-
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Category</label>
-                                        <input 
-                                            type="text"
-                                            value={formData.category}
-                                            onChange={(e) => setFormData({...formData, category: e.target.value})}
-                                            className="w-full bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-slate-800 rounded-xl px-4 py-2 text-sm dark:text-white focus:ring-primary-500"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                    <div className="space-y-4">
                                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Theme Color</label>
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-6 p-4 bg-slate-50 dark:bg-white/5 rounded-3xl border border-slate-100 dark:border-slate-800">
                                             <input 
                                                 type="color"
                                                 value={formData.cover_color}
                                                 onChange={(e) => setFormData({...formData, cover_color: e.target.value})}
-                                                className="w-10 h-10 rounded-lg p-0 border-none bg-transparent cursor-pointer"
+                                                className="w-14 h-14 rounded-2xl p-0 border-none bg-transparent cursor-pointer overflow-hidden shadow-lg shadow-black/10"
                                             />
-                                            <span className="text-xs font-mono dark:text-slate-400 uppercase">{formData.cover_color}</span>
+                                            <div>
+                                                <p className="text-xs font-black dark:text-white uppercase font-mono">{formData.cover_color}</p>
+                                                <p className="text-[10px] text-slate-500 font-bold">Primary accent color</p>
+                                            </div>
                                         </div>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Hub Category</label>
+                                        <input 
+                                            type="text"
+                                            value={formData.category}
+                                            onChange={(e) => setFormData({...formData, category: e.target.value})}
+                                            className="w-full bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-slate-800 rounded-2xl px-6 py-4 text-sm font-bold dark:text-white focus:ring-primary-500 focus:bg-white dark:focus:bg-white/10 transition-all shadow-sm"
+                                            placeholder="e.g. Engineering, Arts, Sports..."
+                                        />
+                                    </div>
                                 </div>
+
                                 <div className="space-y-4">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Group Avatar URL</label>
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-800">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Hub Avatar / Icon</label>
+                                    <div className="flex items-center gap-8 p-6 bg-slate-50 dark:bg-white/5 rounded-[2.5rem] border border-slate-100 dark:border-slate-800">
+                                        <div className={`w-24 h-24 rounded-3xl flex items-center justify-center overflow-hidden border-4 border-white dark:border-slate-800 shadow-xl bg-gradient-to-br from-primary-500 to-indigo-600`}>
                                             {formData.avatar_url ? (
                                                 <img src={formData.avatar_url} alt="Avatar Preview" className="w-full h-full object-cover" />
                                             ) : (
-                                                <span className="text-xl font-black text-slate-400">{group.icon_initials || group.name[0]}</span>
+                                                <span className="text-3xl font-black text-white">{group.icon_initials || group.name[0]}</span>
                                             )}
                                         </div>
-                                        <input 
-                                            type="text"
-                                            value={formData.avatar_url}
-                                            onChange={(e) => setFormData({...formData, avatar_url: e.target.value})}
-                                            className="flex-1 bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-slate-800 rounded-xl px-4 py-2 text-sm dark:text-white focus:ring-primary-500"
-                                            placeholder="Paste image URL..."
-                                        />
+                                        <div className="flex-1 space-y-2">
+                                            <p className="text-xs font-black dark:text-white uppercase tracking-tight">Image URL</p>
+                                            <input 
+                                                type="text"
+                                                value={formData.avatar_url}
+                                                onChange={(e) => setFormData({...formData, avatar_url: e.target.value})}
+                                                className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-slate-800 rounded-2xl px-6 py-3 text-sm dark:text-white focus:ring-primary-500 transition-all shadow-sm"
+                                                placeholder="Paste an image link (e.g. from Google or Unsplash)..."
+                                            />
+                                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Supports PNG, JPG, WEBP</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
+                            {/* Info & Content */}
+                            <div className="card p-10 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1120] space-y-8">
+                                <div>
+                                    <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest mb-1">Hub Description</h3>
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Tell the world what this hub is about</p>
+                                </div>
+                                <textarea 
+                                    value={formData.description}
+                                    onChange={(e) => setFormData({...formData, description: e.target.value})}
+                                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-slate-800 rounded-[2rem] p-8 text-sm font-medium dark:text-white focus:ring-primary-500 focus:bg-white dark:focus:bg-white/10 transition-all min-h-[160px] leading-relaxed shadow-sm"
+                                    placeholder="Describe your hub's mission, rules, and vibe..."
+                                />
+                            </div>
+
                             {/* Privacy & Permissions */}
-                            <div className="card p-8 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1120] space-y-6">
-                                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Privacy & Permissions</h3>
-                                
-                                <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-slate-800">
-                                    <div className="flex items-center gap-4">
-                                        <div className="p-3 bg-primary-500/10 rounded-xl">
-                                            <Lock className="w-5 h-5 text-primary-500" />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="card p-8 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1120] flex items-center justify-between group hover:border-primary-500/20 transition-all">
+                                    <div className="flex items-center gap-6">
+                                        <div className="p-4 bg-primary-500/10 rounded-2xl text-primary-500 group-hover:scale-110 transition-transform shadow-sm">
+                                            <Lock className="w-6 h-6" />
                                         </div>
                                         <div>
-                                            <p className="text-xs font-black dark:text-white uppercase">Private Community</p>
-                                            <p className="text-[10px] text-slate-500 font-bold">Only members can see group content.</p>
+                                            <p className="text-sm font-black dark:text-white uppercase tracking-tight">Private Community</p>
+                                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Members-only content</p>
                                         </div>
                                     </div>
                                     <button 
                                         onClick={() => setFormData({...formData, is_private: !formData.is_private})}
-                                        className={`w-12 h-6 rounded-full transition-colors relative ${formData.is_private ? 'bg-primary-500' : 'bg-slate-300 dark:bg-slate-700'}`}
+                                        className={`w-14 h-7 rounded-full transition-all relative ${formData.is_private ? 'bg-primary-500 shadow-glow shadow-primary-500/20' : 'bg-slate-200 dark:bg-slate-700'}`}
                                     >
-                                        <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${formData.is_private ? 'translate-x-6' : ''}`} />
+                                        <div className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full transition-all shadow-md ${formData.is_private ? 'translate-x-7' : ''}`} />
                                     </button>
                                 </div>
 
-                                <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-slate-800">
-                                    <div className="flex items-center gap-4">
-                                        <div className="p-3 bg-amber-500/10 rounded-xl">
-                                            <ShieldCheck className="w-5 h-5 text-amber-500" />
+                                <div className="card p-8 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1120] flex items-center justify-between group hover:border-amber-500/20 transition-all">
+                                    <div className="flex items-center gap-6">
+                                        <div className="p-4 bg-amber-500/10 rounded-2xl text-amber-500 group-hover:scale-110 transition-transform shadow-sm">
+                                            <ShieldCheck className="w-6 h-6" />
                                         </div>
                                         <div>
-                                            <p className="text-xs font-black dark:text-white uppercase">Post Approval Required</p>
-                                            <p className="text-[10px] text-slate-500 font-bold">New posts must be approved by a manager.</p>
+                                            <p className="text-sm font-black dark:text-white uppercase tracking-tight">Post Approval</p>
+                                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Moderate all new posts</p>
                                         </div>
                                     </div>
                                     <button 
                                         onClick={() => setFormData({...formData, post_approval_required: !formData.post_approval_required})}
-                                        className={`w-12 h-6 rounded-full transition-colors relative ${formData.post_approval_required ? 'bg-primary-500' : 'bg-slate-300 dark:bg-slate-700'}`}
+                                        className={`w-14 h-7 rounded-full transition-all relative ${formData.post_approval_required ? 'bg-amber-500 shadow-glow shadow-amber-500/20' : 'bg-slate-200 dark:bg-slate-700'}`}
                                     >
-                                        <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${formData.post_approval_required ? 'translate-x-6' : ''}`} />
+                                        <div className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full transition-all shadow-md ${formData.post_approval_required ? 'translate-x-7' : ''}`} />
                                     </button>
                                 </div>
                             </div>
@@ -251,10 +270,10 @@ export default function GroupManagerDashboard() {
                     )}
 
                     {activeTab === 'moderation' && (
-                        <div className="text-center py-20 card border-dashed border-2 bg-transparent border-slate-200 dark:border-slate-800">
-                            <ShieldAlert className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-                            <h3 className="text-lg font-black dark:text-white mb-2">Moderation Queue</h3>
-                            <p className="text-sm text-slate-500">No pending items to review at this time.</p>
+                        <div className="text-center py-32 card border-dashed border-4 bg-slate-50/50 dark:bg-white/5 border-slate-200 dark:border-slate-800 rounded-[3rem] animate-in zoom-in duration-500">
+                            <ShieldAlert className="w-20 h-20 text-slate-300 dark:text-slate-700 mx-auto mb-6" />
+                            <h3 className="text-2xl font-black dark:text-white mb-2 tracking-tight">Moderation Queue</h3>
+                            <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">You're all caught up! No pending items.</p>
                         </div>
                     )}
                 </main>

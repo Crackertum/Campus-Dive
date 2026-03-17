@@ -14,7 +14,7 @@ import AnnouncementsWidget from '../social/AnnouncementsWidget';
 import NotificationDropdown from '../social/NotificationDropdown';
 import CreatePostModal from '../social/CreatePostModal';
 
-    const location = useLocation();
+export default function SocialLayout() {
     const { user, logout } = useAuth();
     const { dark, toggle } = useTheme();
     const [showNotifications, setShowNotifications] = useState(false);

@@ -6,7 +6,8 @@ import {
     LayoutDashboard, Users, MessageSquare, FileText, Settings,
     LogOut, Shield, BarChart3, Moon, Sun, Menu, X, ChevronDown, Users2
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import api from '../../api/client';
 
 export default function Sidebar() {
     const { user, logout, isAdmin, isManager, isInterviewer } = useAuth();

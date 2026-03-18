@@ -5,11 +5,13 @@ export default function NotificationDropdown({ notifications = [], unreadCount =
     const dropdownRef = useRef(null);
 
     const getInitials = (title) => {
+        if (!title) return '??';
         return title.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
     };
 
     const getGradient = (type) => {
-        switch(type) {
+        if (!type) return 'from-blue-500 to-indigo-600';
+        switch(type.toLowerCase()) {
             case 'success': return 'from-emerald-500 to-teal-600';
             case 'warning': return 'from-amber-500 to-orange-600';
             case 'error': return 'from-rose-500 to-pink-600';

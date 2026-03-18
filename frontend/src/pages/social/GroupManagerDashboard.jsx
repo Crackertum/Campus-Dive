@@ -143,8 +143,8 @@ export default function GroupManagerDashboard() {
                                 { label: 'Pending Posts', value: 0, color: 'amber' },
                                 { label: 'New This Week', value: 0, color: 'emerald' }
                             ].map(stat => (
-                                <div key={stat.label} className="card p-10 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1120] text-center group hover:border-primary-500/30 transition-all hover:shadow-2xl hover:shadow-primary-500/5">
-                                    <p className={`text-5xl font-black dark:text-white mb-3 tracking-tighter transition-transform group-hover:scale-110`}>{stat.value}</p>
+                                <div key={stat.label} className="card p-6 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1120] text-center group hover:border-primary-500/30 transition-all hover:shadow-2xl hover:shadow-primary-500/5">
+                                    <p className={`text-4xl font-black dark:text-white mb-2 tracking-tighter transition-transform group-hover:scale-110`}>{stat.value}</p>
                                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none">{stat.label}</p>
                                 </div>
                             ))}
@@ -154,7 +154,7 @@ export default function GroupManagerDashboard() {
                     {activeTab === 'settings' && (
                         <div className="space-y-8 animate-in fade-in slide-in-from-right-8 duration-500">
                             {/* Visual Branding */}
-                            <div className="card p-10 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1120] space-y-10">
+                            <div className="card p-6 md:p-8 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1120] space-y-8">
                                 <div>
                                     <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest mb-1">Visual Branding</h3>
                                     <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Customize how your hub looks to others</p>
@@ -215,7 +215,7 @@ export default function GroupManagerDashboard() {
                             </div>
 
                             {/* Info & Content */}
-                            <div className="card p-10 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1120] space-y-8">
+                            <div className="card p-6 md:p-8 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1120] space-y-6">
                                 <div>
                                     <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest mb-1">Hub Description</h3>
                                     <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Tell the world what this hub is about</p>
@@ -229,15 +229,15 @@ export default function GroupManagerDashboard() {
                             </div>
 
                             {/* Privacy & Permissions */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="card p-8 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1120] flex items-center justify-between group hover:border-primary-500/20 transition-all">
-                                    <div className="flex items-center gap-6">
-                                        <div className="p-4 bg-primary-500/10 rounded-2xl text-primary-500 group-hover:scale-110 transition-transform shadow-sm">
-                                            <Lock className="w-6 h-6" />
+                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                                <div className="card p-6 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1120] flex items-center justify-between gap-4 group hover:border-primary-500/20 transition-all">
+                                    <div className="flex items-center gap-4 min-w-0">
+                                        <div className="p-3 bg-primary-500/10 rounded-2xl text-primary-500 group-hover:scale-110 transition-transform shadow-sm shrink-0">
+                                            <Lock className="w-5 h-5" />
                                         </div>
-                                        <div>
-                                            <p className="text-sm font-black dark:text-white uppercase tracking-tight">Private Community</p>
-                                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Members-only content</p>
+                                        <div className="min-w-0">
+                                            <p className="text-sm font-black dark:text-white uppercase tracking-tight truncate">Private Community</p>
+                                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest truncate">Members-only content</p>
                                         </div>
                                     </div>
                                     <button 
@@ -248,14 +248,14 @@ export default function GroupManagerDashboard() {
                                     </button>
                                 </div>
 
-                                <div className="card p-8 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1120] flex items-center justify-between group hover:border-amber-500/20 transition-all">
-                                    <div className="flex items-center gap-6">
-                                        <div className="p-4 bg-amber-500/10 rounded-2xl text-amber-500 group-hover:scale-110 transition-transform shadow-sm">
-                                            <ShieldCheck className="w-6 h-6" />
+                                <div className="card p-6 border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1120] flex items-center justify-between gap-4 group hover:border-amber-500/20 transition-all">
+                                    <div className="flex items-center gap-4 min-w-0">
+                                        <div className="p-3 bg-amber-500/10 rounded-2xl text-amber-500 group-hover:scale-110 transition-transform shadow-sm shrink-0">
+                                            <ShieldCheck className="w-5 h-5" />
                                         </div>
-                                        <div>
-                                            <p className="text-sm font-black dark:text-white uppercase tracking-tight">Post Approval</p>
-                                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Moderate all new posts</p>
+                                        <div className="min-w-0">
+                                            <p className="text-sm font-black dark:text-white uppercase tracking-tight truncate">Post Approval</p>
+                                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest truncate">Moderate all new posts</p>
                                         </div>
                                     </div>
                                     <button 

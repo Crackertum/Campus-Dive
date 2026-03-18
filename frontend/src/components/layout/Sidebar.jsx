@@ -33,8 +33,8 @@ export default function Sidebar() {
                     api.get('/notifications/unread-count')
                 ]);
                 setCounts({
-                    messages: msgRes.data.unread_count || 0,
-                    notifications: notifRes.data.unread_count || 0
+                    messages: msgRes.data.count || 0,
+                    notifications: notifRes.data.count || 0
                 });
             } catch (err) {
                 console.error("Failed to fetch unread counts", err);
@@ -107,7 +107,7 @@ export default function Sidebar() {
                         <link.icon className="w-5 h-5 shrink-0" />
                         {!collapsed && <span className="flex-1">{link.label}</span>}
                         {!collapsed && getBadge(link.label) && (
-                            <span className="bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
+                            <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm">
                                 {getBadge(link.label)}
                             </span>
                         )}

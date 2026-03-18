@@ -15,16 +15,48 @@ export default function Sidebar() {
     const [mobileOpen, setMobileOpen] = useState(false);
     const navigate = useNavigate();
 
+    const [counts, setCounts] = useState({ messages: 0, notifications: 0 });
+
     const handleLogout = async () => {
         await logout();
         navigate('/login');
+    };
+
+    useEffect(() => {
+        if (!user) return;
+        
+        const fetchCounts = async () => {
+            try {
+                const [msgRes, notifRes] = await Promise.all([
+                    api.get('/messages/unread-count'),
+                    api.get('/notifications/unread-count')
+                ]);
+                setCounts({
+                    messages: msgRes.data.unread_count || 0,
+                    notifications: notifRes.data.unread_count || 0
+                });
+            } catch (err) {
+                console.error("Failed to fetch unread counts", err);
+            }
+        };
+
+        fetchCounts();
+        // Refresh every 30 seconds
+        const interval = setInterval(fetchCounts, 30000);
+        return () => clearInterval(interval);
+    }, [user]);
+
+    const getBadge = (label) => {
+        if (label === 'Messages' && counts.messages > 0) return counts.messages;
+        if (label === 'Dashboard' && counts.notifications > 0) return counts.notifications;
+        return null;
     };
 
     const studentLinks = [
         { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { to: '/documents', icon: FileText, label: 'Documents' },
         { to: '/messages', icon: MessageSquare, label: 'Messages' },
-        { to: '/social', icon: Users2, label: 'Social Hub', target: '_blank' },
+        { to: '/social', icon: Users2, label: 'Social Hub' },
         { to: '/settings', icon: Settings, label: 'Settings' },
     ];
 
@@ -33,7 +65,7 @@ export default function Sidebar() {
         { to: '/admin/students', icon: Users, label: 'Students' },
         { to: '/admin/roles', icon: Shield, label: 'Roles' },
         { to: '/admin/social', icon: Users2, label: 'Hub Management' },
-        { to: '/admin/social-hub', icon: Users2, label: 'Social Hub', target: '_blank' },
+        { to: '/admin/social-hub', icon: Users2, label: 'Social Hub' },
         { to: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
         { to: '/messages', icon: MessageSquare, label: 'Messages' },
         { to: '/settings', icon: Settings, label: 'Settings' },
@@ -72,7 +104,12 @@ export default function Sidebar() {
                         }
                     >
                         <link.icon className="w-5 h-5 shrink-0" />
-                        {!collapsed && <span>{link.label}</span>}
+                        {!collapsed && <span className="flex-1">{link.label}</span>}
+                        {!collapsed && getBadge(link.label) && (
+                            <span className="bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
+                                {getBadge(link.label)}
+                            </span>
+                        )}
                     </NavLink>
                 ))}
             </nav>

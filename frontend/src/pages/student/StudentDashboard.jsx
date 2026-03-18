@@ -104,7 +104,11 @@ export default function StudentDashboard() {
                         )}
                     </button>
                     {showNotifications && (
-                        <NotificationDropdown onClose={() => setShowNotifications(false)} />
+                        <NotificationDropdown 
+                            notifications={data?.notifications || []} 
+                            unreadCount={data?.unread_notifications || 0}
+                            onClose={() => setShowNotifications(false)} 
+                        />
                     )}
                 </div>
             </div>
@@ -149,9 +153,8 @@ export default function StudentDashboard() {
             {/* Progress Tracker */}
             <ProgressTracker status={data?.application_status || 'submitted'} />
 
-            {/* Recent Documents & Notifications */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Documents */}
+            {/* Recent Documents */}
+            <div className="grid grid-cols-1 gap-6">
                 <div className="card">
                     <div className="flex items-center justify-between p-6 border-b border-surface-100 dark:border-surface-800">
                         <h3 className="font-semibold">Recent Documents</h3>
@@ -175,30 +178,6 @@ export default function StudentDashboard() {
                             <div className="p-8 text-center text-surface-400">
                                 <FileText className="w-8 h-8 mx-auto mb-2 opacity-50" />
                                 <p className="text-sm">No documents yet</p>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Notifications */}
-                <div className="card">
-                    <div className="flex items-center justify-between p-6 border-b border-surface-100 dark:border-surface-800">
-                        <h3 className="font-semibold">Notifications</h3>
-                    </div>
-                    <div className="divide-y divide-surface-100 dark:divide-surface-800">
-                        {data?.notifications?.length > 0 ? data.notifications.slice(0, 5).map(n => (
-                            <div key={n.id} className={`flex items-start gap-3 p-4 ${!n.is_read ? 'bg-primary-50/50 dark:bg-primary-900/10' : ''}`}>
-                                <div className={`w-2 h-2 rounded-full mt-2 shrink-0 ${!n.is_read ? 'bg-primary-500' : 'bg-surface-300'}`} />
-                                <div>
-                                    <p className="text-sm font-medium">{n.title}</p>
-                                    <p className="text-xs text-surface-500 mt-0.5">{n.message}</p>
-                                    <p className="text-xs text-surface-400 mt-1">{new Date(n.created_at).toLocaleDateString()}</p>
-                                </div>
-                            </div>
-                        )) : (
-                            <div className="p-8 text-center text-surface-400">
-                                <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                                <p className="text-sm">No notifications</p>
                             </div>
                         )}
                     </div>

@@ -113,42 +113,7 @@ export default function StudentDashboard() {
                 </div>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="card-hover p-6">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
-                            <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold">{data?.document_count || 0}</p>
-                            <p className="text-sm text-surface-500">Documents</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="card-hover p-6">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center">
-                            <MessageSquare className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold">{data?.unread_messages || 0}</p>
-                            <p className="text-sm text-surface-500">Unread Messages</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="card-hover p-6">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
-                            <Bell className="w-6 h-6 text-amber-600 dark:text-amber-400" />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold">{data?.unread_notifications || 0}</p>
-                            <p className="text-sm text-surface-500">Notifications</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
 
             {/* Progress Tracker */}
             <ProgressTracker status={data?.application_status || 'submitted'} />

@@ -3,12 +3,14 @@ import { Link } from 'react-router-dom';
 import api from '../../api/client';
 import { StatusBadge, UserAvatar } from '../../components/ui/StatusBadge';
 import { SkeletonStats, SkeletonTable } from '../../components/ui/Skeleton';
-import { Users, UserCheck, Clock, XCircle, TrendingUp, ArrowRight, Eye, MessageSquare } from 'lucide-react';
+import { Users, UserCheck, Clock, XCircle, TrendingUp, ArrowRight, Eye, MessageSquare, Bell } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import NotificationDropdown from '../../components/social/NotificationDropdown';
 
 export default function AdminDashboard() {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [showNotifications, setShowNotifications] = useState(false);
 
     useEffect(() => {
         api.get('/admin/dashboard').then(res => {
@@ -48,9 +50,32 @@ export default function AdminDashboard() {
                     <h1 className="text-2xl font-bold">Admin Dashboard</h1>
                     <p className="text-surface-500 dark:text-surface-400 mt-1">Campus recruitment overview</p>
                 </div>
-                <Link to="/admin/students" className="btn-primary">
-                    <Users className="w-4 h-4" /> Manage Students
-                </Link>
+                <div className="flex items-center gap-4">
+                    <div className="relative">
+                        <button
+                            onClick={() => setShowNotifications(!showNotifications)}
+                            className={`btn-icon relative transition-all duration-300 ${showNotifications ? 'bg-primary-500 text-white shadow-glow' : 'bg-white dark:bg-surface-900 shadow-soft'}`}
+                        >
+                            <Bell className={`w-5 h-5 ${showNotifications ? 'animate-none' : 'hover:animate-swing'}`} />
+                            {data?.unread_notifications > 0 && (
+                                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white dark:border-surface-900 animate-bounce">
+                                    {data.unread_notifications}
+                                </span>
+                            )}
+                        </button>
+
+                        {showNotifications && (
+                            <NotificationDropdown
+                                notifications={data?.notifications}
+                                unreadCount={data?.unread_notifications}
+                                onClose={() => setShowNotifications(false)}
+                            />
+                        )}
+                    </div>
+                    <Link to="/admin/students" className="btn-primary">
+                        <Users className="w-4 h-4" /> Manage Students
+                    </Link>
+                </div>
             </div>
 
             {/* Stats Cards */}

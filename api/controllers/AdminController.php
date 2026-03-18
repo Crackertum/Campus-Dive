@@ -30,11 +30,16 @@ class AdminController {
             ORDER BY month ASC
         ")->fetchAll();
 
+        $notifications = Notification::getByUserId($user['id'], 5);
+        $unreadNotifications = Notification::getUnreadCount($user['id']);
+
         Response::success([
-            'stats'           => $stats,
-            'unread_messages' => $unreadMessages,
-            'recent_students' => $recent,
-            'trends'          => $trends,
+            'stats'                => $stats,
+            'unread_messages'      => $unreadMessages,
+            'unread_notifications' => $unreadNotifications,
+            'notifications'        => $notifications,
+            'recent_students'      => $recent,
+            'trends'               => $trends,
         ]);
     }
 

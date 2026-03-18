@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { StatusBadge, UserAvatar } from '../../components/ui/StatusBadge';
 import { SkeletonStats, SkeletonCard } from '../../components/ui/Skeleton';
 import { FileText, MessageSquare, Bell, Clock, CheckCircle, ArrowRight, Upload } from 'lucide-react';
+import NotificationDropdown from '../../components/social/NotificationDropdown';
 
 const STEPS = [
     { key: 'submitted', label: 'Submitted', icon: CheckCircle },
@@ -65,6 +66,7 @@ export default function StudentDashboard() {
     const { user } = useAuth();
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [showNotifications, setShowNotifications] = useState(false);
 
     useEffect(() => {
         api.get('/student/dashboard').then(res => {
@@ -90,6 +92,20 @@ export default function StudentDashboard() {
                 <div>
                     <h1 className="text-2xl font-bold">Welcome back, {user?.firstname}! 👋</h1>
                     <p className="text-surface-500 dark:text-surface-400 mt-1">Here's your application overview</p>
+                </div>
+                <div className="relative z-50">
+                    <button 
+                        onClick={() => setShowNotifications(true)}
+                        className="w-12 h-12 rounded-2xl bg-white dark:bg-surface-800 border border-surface-200 dark:border-surface-700 flex items-center justify-center text-surface-500 hover:text-primary-600 hover:border-primary-200 transition-all relative shadow-sm"
+                    >
+                        <Bell className="w-6 h-6" />
+                        {data?.unread_notifications > 0 && (
+                            <span className="absolute top-3 right-3 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-surface-800 rounded-full" />
+                        )}
+                    </button>
+                    {showNotifications && (
+                        <NotificationDropdown onClose={() => setShowNotifications(false)} />
+                    )}
                 </div>
             </div>
 

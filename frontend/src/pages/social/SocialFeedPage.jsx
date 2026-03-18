@@ -23,6 +23,15 @@ export default function SocialFeedPage() {
 
     useEffect(() => {
         fetchData();
+        
+        const handlePostCreated = () => {
+            fetchData();
+        };
+        window.addEventListener('postCreated', handlePostCreated);
+        
+        return () => {
+            window.removeEventListener('postCreated', handlePostCreated);
+        };
     }, []);
 
     const fetchData = async () => {

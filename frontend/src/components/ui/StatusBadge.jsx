@@ -25,6 +25,7 @@ export function UserAvatar({ user, size = 'md' }) {
         md: 'w-10 h-10 text-sm',
         lg: 'w-14 h-14 text-lg',
         xl: 'w-20 h-20 text-2xl',
+        full: 'w-full h-full text-4xl',
     };
 
     const hasImage = user?.avatar_image && !imgError;

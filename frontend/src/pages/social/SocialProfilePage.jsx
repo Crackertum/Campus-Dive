@@ -130,7 +130,7 @@ export default function SocialProfilePage() {
                     </div>
                     <div className="text-center">
                         <p className="text-2xl font-black text-emerald-500">
-                            {profile.post_count > 10 ? 'Elite' : profile.post_count > 0 ? 'Member' : 'Newcomer'}
+                            {profile.post_count > 10 ? 'Pro' : profile.post_count > 0 ? 'Member' : 'Newcomer'}
                         </p>
                         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Contributor</p>
                     </div>
@@ -172,7 +172,5 @@ export default function SocialProfilePage() {
                 )}
             </div>
         </div>
-    );
-}
     );
 }

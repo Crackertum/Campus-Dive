@@ -258,6 +258,34 @@ $routes = [
             Response::error("Migration failed: " . $e->getMessage(), 500);
         }
     },
+    'GET /auth/migrate-social-profile' => function() {
+        try {
+            $db = Database::getInstance();
+            $messages = [];
+            
+            // Add bio
+            $check = $db->query("SHOW COLUMNS FROM users LIKE 'bio'")->fetch();
+            if (!$check) {
+                $db->exec("ALTER TABLE users ADD COLUMN bio TEXT DEFAULT NULL");
+                $messages[] = "Added 'bio' column.";
+            }
+            
+            // Add location
+            $check = $db->query("SHOW COLUMNS FROM users LIKE 'location'")->fetch();
+            if (!$check) {
+                $db->exec("ALTER TABLE users ADD COLUMN location VARCHAR(100) DEFAULT NULL");
+                $messages[] = "Added 'location' column.";
+            }
+
+            if (empty($messages)) {
+                Response::success(null, "Social profile columns already exist.");
+            } else {
+                Response::success(null, implode(" ", $messages));
+            }
+        } catch (Exception $e) {
+            Response::error("Migration failed: " . $e->getMessage(), 500);
+        }
+    },
     'GET /inspect-db' => function() {
         require_once __DIR__ . '/inspect_db.php';
     },

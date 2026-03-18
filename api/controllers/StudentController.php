@@ -105,6 +105,8 @@ class StudentController {
             'firstname' => $v->sanitized('firstname'),
             'lastname'  => $v->sanitized('lastname'),
             'phone'     => $v->sanitized('phone'),
+            'bio'       => $input['bio'] ?? null,
+            'location'  => $input['location'] ?? null,
             'avatar'    => $avatar,
         ]);
 

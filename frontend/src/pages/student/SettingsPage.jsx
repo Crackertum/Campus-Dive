@@ -15,6 +15,8 @@ export default function SettingsPage() {
         firstname: user?.firstname || '',
         lastname: user?.lastname || '',
         phone: user?.phone || '',
+        bio: user?.bio || '',
+        location: user?.location || '',
     });
     const [passwords, setPasswords] = useState({
         current_password: '', new_password: '', confirm_password: '',
@@ -127,6 +129,19 @@ export default function SettingsPage() {
                                 <div>
                                     <label className="block text-sm font-medium mb-1.5">Phone</label>
                                     <input type="tel" value={profile.phone} onChange={e => setProfile(p => ({ ...p, phone: e.target.value }))} className="input-field" required />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1.5">Location</label>
+                                    <input type="text" value={profile.location} onChange={e => setProfile(p => ({ ...p, location: e.target.value }))} className="input-field" placeholder="e.g. Mombasa, KE" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1.5">Bio</label>
+                                    <textarea 
+                                        value={profile.bio} 
+                                        onChange={e => setProfile(p => ({ ...p, bio: e.target.value }))} 
+                                        className="input-field min-h-[100px] resize-none" 
+                                        placeholder="Tell us a bit about yourself..."
+                                    />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium mb-1.5">Email</label>
